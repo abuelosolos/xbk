@@ -38,8 +38,8 @@ export function CategoryRail() {
               />
               <div className="absolute inset-0 bg-gradient-to-b from-ink/60 via-ink/10 to-ink/40" />
             </div>
-            <span className="display-campaign absolute left-5 top-5 !text-[40px]">{t.label}</span>
-            <span className="absolute bottom-5 left-5 inline-flex h-10 items-center rounded-pill bg-white px-6 text-[16px] font-medium text-ink transition group-hover:bg-cloud group-active:scale-95">
+            <span className="display-campaign absolute left-5 top-5 !text-[clamp(32px,6vw,40px)]">{t.label}</span>
+            <span className="absolute bottom-5 left-5 inline-flex h-10 items-center rounded-pill bg-white px-6 text-fs-16 font-medium text-ink transition group-hover:bg-cloud group-active:scale-95">
               Shop
             </span>
           </Link>

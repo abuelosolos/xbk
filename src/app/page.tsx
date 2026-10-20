@@ -11,9 +11,9 @@ import { getAllProducts } from "@/lib/products";
 function SectionHeading({ children, href }: { children: React.ReactNode; href?: string }) {
   return (
     <div className="mb-6 flex items-end justify-between">
-      <h2 className="text-[32px] font-medium uppercase leading-tight">{children}</h2>
+      <h2 className="text-fs-32 font-medium uppercase leading-tight">{children}</h2>
       {href && (
-        <Link href={href} className="text-[16px] font-medium underline underline-offset-4">
+        <Link href={href} className="text-fs-16 font-medium underline underline-offset-4">
           Shop All
         </Link>
       )}
@@ -48,7 +48,7 @@ export default async function HomePage() {
                 <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-ink/80 via-ink/20 to-transparent" />
                 <div>
                   <h3 className="display-campaign">{tile.title}</h3>
-                  <p className="mt-2 text-[16px] opacity-80">{tile.sub}</p>
+                  <p className="mt-2 text-fs-16 opacity-80">{tile.sub}</p>
                   <ButtonLink href={tile.href} variant="outline" className="mt-5">
                     Explore
                   </ButtonLink>

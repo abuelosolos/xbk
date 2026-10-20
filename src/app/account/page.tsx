@@ -19,26 +19,26 @@ export default async function AccountPage() {
     <div className="mx-auto max-w-[900px] px-4 pt-10 lg:px-12">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-[32px] font-medium leading-tight">{session.user.name}</h1>
-          <p className="text-[16px] text-mute">{session.user.email}</p>
+          <h1 className="text-fs-32 font-medium leading-tight">{session.user.name}</h1>
+          <p className="text-fs-16 text-mute">{session.user.email}</p>
         </div>
         <SignOutButton />
       </div>
 
-      <h2 className="mb-4 mt-12 text-[24px] font-medium">Orders</h2>
+      <h2 className="mb-4 mt-12 text-fs-24 font-medium">Orders</h2>
       {myOrders.length === 0 ? (
-        <p className="text-[16px] text-mute">You haven&apos;t placed any orders yet.</p>
+        <p className="text-fs-16 text-mute">You haven&apos;t placed any orders yet.</p>
       ) : (
         <ul className="divide-y divide-hairline-soft border-y border-hairline-soft">
           {myOrders.map((o) => (
             <li key={o.id} className="flex items-center justify-between gap-4 py-5">
               <div>
-                <p className="text-[16px] font-medium">Order {o.reference.slice(-8).toUpperCase()}</p>
-                <p className="text-[14px] text-mute">{o.createdAt.toLocaleDateString("en-NG", { dateStyle: "medium" })}</p>
+                <p className="text-fs-16 font-medium">Order {o.reference.slice(-8).toUpperCase()}</p>
+                <p className="text-fs-14 text-mute">{o.createdAt.toLocaleDateString("en-NG", { dateStyle: "medium" })}</p>
               </div>
               <div className="text-right">
-                <p className="text-[16px] font-medium">{formatNaira(o.totalKobo)}</p>
-                <p className="text-[14px] capitalize text-mute">{o.status}</p>
+                <p className="text-fs-16 font-medium">{formatNaira(o.totalKobo)}</p>
+                <p className="text-fs-14 capitalize text-mute">{o.status}</p>
               </div>
             </li>
           ))}

@@ -47,10 +47,10 @@ export function HubTiles({ section }: { section: HubSection }) {
               </div>
               <div className="mt-4 flex items-end justify-between gap-4">
                 <div className="min-w-0">
-                  <h3 className="text-[24px] font-medium leading-tight">{t.label}</h3>
-                  <p className="mt-1 text-[16px] text-mute">{styles(t.count)}</p>
+                  <h3 className="text-fs-24 font-medium leading-tight">{t.label}</h3>
+                  <p className="mt-1 text-fs-16 text-mute">{styles(t.count)}</p>
                 </div>
-                <span className="inline-flex h-10 shrink-0 items-center rounded-pill bg-ink px-6 text-[16px] font-medium text-white transition group-hover:bg-charcoal group-active:scale-95">
+                <span className="inline-flex h-10 shrink-0 items-center rounded-pill bg-ink px-6 text-fs-16 font-medium text-white transition group-hover:bg-charcoal group-active:scale-95">
                   Shop
                 </span>
               </div>
@@ -73,8 +73,8 @@ export function HubTiles({ section }: { section: HubSection }) {
         >
           <Link href={t.href} className="group block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink">
             <FramedImage src={t.image} label={t.label} className="aspect-square" sizes="(min-width:1024px) 25vw, 50vw" />
-            <h3 className="mt-3 truncate text-[16px] font-medium leading-snug group-hover:underline group-hover:underline-offset-4">{t.label}</h3>
-            <p className="text-[14px] font-medium text-mute">{styles(t.count)}</p>
+            <h3 className="mt-3 truncate text-fs-16 font-medium leading-snug group-hover:underline group-hover:underline-offset-4">{t.label}</h3>
+            <p className="text-fs-14 font-medium text-mute">{styles(t.count)}</p>
           </Link>
         </motion.li>
       ))}

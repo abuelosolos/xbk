@@ -10,7 +10,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="mx-auto grid max-w-[1440px] gap-8 px-4 pt-8 lg:grid-cols-[200px_1fr] lg:px-12">
       <aside>
-        <p className="mb-3 px-4 text-[12px] font-medium uppercase tracking-wide text-mute">Admin</p>
+        <p className="mb-3 px-4 text-fs-12 font-medium uppercase tracking-wide text-mute">Admin</p>
         <AdminNav />
       </aside>
       <section className="min-w-0">{children}</section>

@@ -35,7 +35,7 @@ export default async function SuccessPage({ searchParams }: { searchParams: SP }
     <div className="mx-auto flex max-w-[1440px] flex-col items-start gap-6 px-4 py-24 lg:px-12">
       {result.ok && <ClearCart />}
       <h1 className="display-campaign">{copy.title}</h1>
-      <p className="max-w-md text-[16px] text-mute">{copy.body}</p>
+      <p className="max-w-md text-fs-16 text-mute">{copy.body}</p>
       <div className="flex gap-3">
         <ButtonLink href="/account">View Orders</ButtonLink>
         <ButtonLink href="/shop" variant="secondary">Keep Shopping</ButtonLink>

@@ -26,7 +26,7 @@ export default async function ProductPage({ params }: Params) {
       <ProductView product={product} />
       {related.length > 0 && (
         <section className="mx-auto mt-20 max-w-[1440px] px-4 lg:px-12">
-          <h2 className="mb-6 text-[24px] font-medium">You Might Also Like</h2>
+          <h2 className="mb-6 text-fs-24 font-medium">You Might Also Like</h2>
           <ProductRow products={related} columns={4} />
         </section>
       )}

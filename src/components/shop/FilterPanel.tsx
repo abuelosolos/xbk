@@ -29,7 +29,7 @@ function Group({ title, children, defaultOpen = true }: { title: string; childre
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between text-left text-[16px] font-medium"
+        className="flex w-full items-center justify-between text-left text-fs-16 font-medium"
       >
         {title}
         <motion.svg
@@ -72,7 +72,7 @@ export function FilterPanel({
         <ul className="space-y-2">
           {facets.genders.map((g) => (
             <li key={g}>
-              <label className="flex cursor-pointer items-center gap-3 text-[16px]">
+              <label className="flex cursor-pointer items-center gap-3 text-fs-16">
                 <input type="checkbox" className="size-4 accent-ink" checked={filters.genders.includes(g)} onChange={() => onChange({ genders: toggle(filters.genders, g) })} />
                 {label(g)}
               </label>
@@ -85,7 +85,7 @@ export function FilterPanel({
         <ul className="space-y-2">
           {facets.categories.map((c) => (
             <li key={c}>
-              <label className="flex cursor-pointer items-center gap-3 text-[16px]">
+              <label className="flex cursor-pointer items-center gap-3 text-fs-16">
                 <input type="checkbox" className="size-4 accent-ink" checked={filters.categories.includes(c)} onChange={() => onChange({ categories: toggle(filters.categories, c) })} />
                 {label(c)}
               </label>
@@ -99,7 +99,7 @@ export function FilterPanel({
           <ul className="space-y-2">
             {PRODUCT_TYPES.filter((t) => facets.types.includes(t.slug)).map((t) => (
               <li key={t.slug}>
-                <label className="flex cursor-pointer items-center gap-3 text-[16px]">
+                <label className="flex cursor-pointer items-center gap-3 text-fs-16">
                   <input type="checkbox" className="size-4 accent-ink" checked={filters.types.includes(t.slug)} onChange={() => onChange({ types: toggle(filters.types, t.slug) })} />
                   {t.label}
                 </label>
@@ -110,7 +110,7 @@ export function FilterPanel({
       )}
 
       <Group title="Sale &amp; Offers">
-        <label className="flex cursor-pointer items-center gap-3 text-[16px]">
+        <label className="flex cursor-pointer items-center gap-3 text-fs-16">
           <input type="checkbox" className="size-4 accent-ink" checked={filters.saleOnly} onChange={() => onChange({ saleOnly: !filters.saleOnly })} />
           Sale
         </label>
@@ -127,7 +127,7 @@ export function FilterPanel({
                 aria-pressed={on}
                 onClick={() => onChange({ sizes: toggle(filters.sizes, s) })}
                 className={cn(
-                  "h-10 rounded-pill border text-[14px] font-medium transition active:scale-95",
+                  "h-10 rounded-pill border text-fs-14 font-medium transition active:scale-95",
                   on ? "border-ink bg-ink text-white" : "border-hairline bg-white hover:border-ink",
                 )}
               >
@@ -164,7 +164,7 @@ export function FilterPanel({
         <ul className="space-y-2">
           {PRICE_BUCKETS.map((b) => (
             <li key={b.id}>
-              <label className="flex cursor-pointer items-center gap-3 text-[16px]">
+              <label className="flex cursor-pointer items-center gap-3 text-fs-16">
                 <input type="radio" name="price" className="size-4 accent-ink" checked={filters.price === b.id} onChange={() => onChange({ price: b.id as PriceBucket })} />
                 {b.label}
               </label>

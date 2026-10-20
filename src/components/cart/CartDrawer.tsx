@@ -52,7 +52,7 @@ export function CartDrawer() {
             transition={{ duration: 0.4, ease: EASE }}
           >
             <div className="flex items-center justify-between border-b border-hairline-soft px-6 py-4">
-              <h2 className="text-[24px] font-medium leading-tight">Bag{mounted && count > 0 ? ` (${count})` : ""}</h2>
+              <h2 className="text-fs-24 font-medium leading-tight">Bag{mounted && count > 0 ? ` (${count})` : ""}</h2>
               <button type="button" aria-label="Close bag" onClick={close} className="flex size-10 items-center justify-center rounded-full bg-cloud transition active:scale-90">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M6 6l12 12M18 6 6 18" /></svg>
               </button>
@@ -63,8 +63,8 @@ export function CartDrawer() {
                 <CartLines compact onNavigate={close} />
               ) : (
                 <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
-                  <p className="text-[24px] font-medium">Your bag is empty</p>
-                  <p className="text-[16px] text-mute">Add something to get moving.</p>
+                  <p className="text-fs-24 font-medium">Your bag is empty</p>
+                  <p className="text-fs-16 text-mute">Add something to get moving.</p>
                   <ButtonLink href="/shop" onClick={close}>Shop All</ButtonLink>
                 </div>
               )}
@@ -72,7 +72,7 @@ export function CartDrawer() {
 
             {mounted && count > 0 && (
               <div className="space-y-4 border-t border-hairline-soft px-6 py-5">
-                <div className="flex justify-between text-[16px] font-medium">
+                <div className="flex justify-between text-fs-16 font-medium">
                   <span>Subtotal</span>
                   <span>{formatNaira(subtotal)}</span>
                 </div>

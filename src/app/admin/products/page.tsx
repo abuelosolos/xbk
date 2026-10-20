@@ -7,17 +7,17 @@ import { createProduct } from "./actions";
 export const dynamic = "force-dynamic";
 
 const input =
-  "h-11 w-full rounded-field border border-hairline bg-white px-4 text-[14px] outline-none focus:border-ink focus:ring-2 focus:ring-ink";
+  "h-11 w-full rounded-field border border-hairline bg-white px-4 text-fs-14 outline-none focus:border-ink focus:ring-2 focus:ring-ink";
 
 export default async function AdminProductsPage() {
   const products = await getAllProducts();
 
   return (
     <>
-      <h1 className="mb-6 text-[32px] font-medium leading-tight">Products</h1>
+      <h1 className="mb-6 text-fs-32 font-medium leading-tight">Products</h1>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-[14px]">
+        <table className="w-full text-left text-fs-14">
           <thead className="border-b border-hairline text-mute">
             <tr>
               <th className="py-3 pr-4 font-medium">Name</th>
@@ -41,9 +41,9 @@ export default async function AdminProductsPage() {
         </table>
       </div>
 
-      <h2 className="mb-4 mt-12 text-[24px] font-medium">New product</h2>
+      <h2 className="mb-4 mt-12 text-fs-24 font-medium">New product</h2>
       {!hasDb() ? (
-        <p className="bg-cloud p-4 text-[14px] text-charcoal">Set DATABASE_URL to create products.</p>
+        <p className="bg-cloud p-4 text-fs-14 text-charcoal">Set DATABASE_URL to create products.</p>
       ) : (
         <form action={createProduct} className="grid max-w-2xl gap-3 sm:grid-cols-2">
           <input name="name" required placeholder="Name" className={input} />

@@ -49,7 +49,7 @@ export function Hero() {
           ))}
         </h1>
         <motion.p
-          className="mt-4 max-w-md text-[16px] text-stone"
+          className="mt-4 max-w-md text-fs-16 text-stone"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.6, ease: EASE }}

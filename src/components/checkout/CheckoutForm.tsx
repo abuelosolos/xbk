@@ -6,7 +6,7 @@ import { formatNaira } from "@/lib/utils";
 import { cartCount, cartSubtotal, useCart } from "@/store/cart";
 
 const field =
-  "h-12 w-full rounded-field border border-hairline bg-white px-4 text-[16px] outline-none transition focus:border-ink focus:ring-2 focus:ring-ink";
+  "h-12 w-full rounded-field border border-hairline bg-white px-4 text-fs-16 outline-none transition focus:border-ink focus:ring-2 focus:ring-ink";
 
 export function CheckoutForm({ email, name }: { email: string; name: string }) {
   const items = useCart((s) => s.items);
@@ -22,8 +22,8 @@ export function CheckoutForm({ email, name }: { email: string; name: string }) {
   if (count === 0) {
     return (
       <div className="mx-auto flex min-h-[50vh] max-w-[1100px] flex-col items-start justify-center gap-5 px-4 lg:px-12">
-        <h1 className="text-[32px] font-medium">Checkout</h1>
-        <p className="text-[16px] text-mute">Your bag is empty.</p>
+        <h1 className="text-fs-32 font-medium">Checkout</h1>
+        <p className="text-fs-16 text-mute">Your bag is empty.</p>
         <ButtonLink href="/shop">Shop All</ButtonLink>
       </div>
     );
@@ -58,9 +58,9 @@ export function CheckoutForm({ email, name }: { email: string; name: string }) {
   return (
     <div className="mx-auto grid max-w-[1100px] gap-12 px-4 pt-10 lg:grid-cols-[1fr_340px] lg:px-12">
       <form onSubmit={onSubmit} className="space-y-4">
-        <h1 className="text-[32px] font-medium">Checkout</h1>
-        <p className="text-[16px] text-mute">Paying as {email}</p>
-        <h2 className="pt-4 text-[24px] font-medium">Delivery</h2>
+        <h1 className="text-fs-32 font-medium">Checkout</h1>
+        <p className="text-fs-16 text-mute">Paying as {email}</p>
+        <h2 className="pt-4 text-fs-24 font-medium">Delivery</h2>
         <input name="fullName" required defaultValue={name} placeholder="Full name" autoComplete="name" className={field} />
         <input name="phone" required type="tel" placeholder="Phone number" autoComplete="tel" className={field} />
         <input name="address" required placeholder="Street address" autoComplete="street-address" className={field} />
@@ -68,15 +68,15 @@ export function CheckoutForm({ email, name }: { email: string; name: string }) {
           <input name="city" required placeholder="City" autoComplete="address-level2" className={field} />
           <input name="state" required placeholder="State" autoComplete="address-level1" className={field} />
         </div>
-        {error && <p role="alert" className="text-[14px] font-medium text-sale">{error}</p>}
+        {error && <p role="alert" className="text-fs-14 font-medium text-sale">{error}</p>}
         <Button type="submit" size="lg" disabled={loading} className="w-full">
           {loading ? "Redirecting to Paystack…" : "Pay with Paystack"}
         </Button>
       </form>
 
       <aside className="h-fit space-y-4 lg:sticky lg:top-24">
-        <h2 className="text-[24px] font-medium">Order Summary</h2>
-        <ul className="space-y-3 text-[14px]">
+        <h2 className="text-fs-24 font-medium">Order Summary</h2>
+        <ul className="space-y-3 text-fs-14">
           {items.map((i) => (
             <li key={i.key} className="flex justify-between gap-3">
               <span>{i.qty} × {i.name} <span className="text-mute">({i.size})</span></span>
@@ -84,7 +84,7 @@ export function CheckoutForm({ email, name }: { email: string; name: string }) {
             </li>
           ))}
         </ul>
-        <div className="flex justify-between border-t border-hairline-soft pt-4 text-[16px] font-medium">
+        <div className="flex justify-between border-t border-hairline-soft pt-4 text-fs-16 font-medium">
           <span>Total</span>
           <span>{formatNaira(subtotal)}</span>
         </div>

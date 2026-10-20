@@ -13,9 +13,9 @@ const variants = {
 } as const;
 
 const sizes = {
-  sm: "h-9 px-4 text-[14px]",
-  md: "h-12 px-8 text-[16px]",
-  lg: "h-14 px-10 text-[16px]",
+  sm: "h-9 px-4 text-fs-14",
+  md: "h-12 px-8 text-fs-16",
+  lg: "h-14 px-10 text-fs-16",
 } as const;
 
 type Shared = { variant?: keyof typeof variants; size?: keyof typeof sizes };

@@ -17,7 +17,7 @@ function UtilityBar() {
   const role = (session?.user as { role?: string } | undefined)?.role;
 
   return (
-    <div className="hidden h-9 items-center justify-end gap-4 bg-cloud px-12 text-[12px] font-medium md:flex">
+    <div className="hidden h-9 items-center justify-end gap-4 bg-cloud px-12 text-fs-12 font-medium md:flex">
       <Link href="/shop" className="hover:text-mute">Help</Link>
       <span aria-hidden className="h-3 w-px bg-hairline" />
       {session ? (
@@ -127,7 +127,7 @@ export function Navbar() {
                     href={item.href}
                     onMouseEnter={() => open(item.key)}
                     onFocus={() => open(item.key)}
-                    className="relative block px-3 py-5 text-[16px] font-medium"
+                    className="relative block px-3 py-5 text-fs-16 font-medium"
                   >
                     {item.label}
                     {active === item.key && (
@@ -161,7 +161,7 @@ export function Navbar() {
                 name="q"
                 placeholder="Search"
                 aria-label="Search products"
-                className="w-28 bg-transparent text-[16px] outline-none placeholder:text-mute"
+                className="w-28 bg-transparent text-fs-16 outline-none placeholder:text-mute"
               />
             </form>
 
@@ -228,14 +228,14 @@ export function Navbar() {
                     key={col.title}
                     variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: EASE } } }}
                   >
-                    <h3 className="mb-3 text-[16px] font-medium">{col.title}</h3>
+                    <h3 className="mb-3 text-fs-16 font-medium">{col.title}</h3>
                     <ul className="space-y-1.5">
                       {col.links.map((l) => (
                         <li key={l.label}>
                           <Link
                             href={l.href}
                             onClick={() => setActive(null)}
-                            className="text-[14px] font-medium text-mute transition hover:text-ink"
+                            className="text-fs-14 font-medium text-mute transition hover:text-ink"
                           >
                             {l.label}
                           </Link>

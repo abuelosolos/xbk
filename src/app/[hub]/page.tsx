@@ -22,9 +22,9 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 function SectionHeading({ children, href }: { children: React.ReactNode; href?: string }) {
   return (
     <div className="mb-6 flex items-end justify-between gap-4">
-      <h2 className="text-[24px] font-medium uppercase leading-tight lg:text-[32px]">{children}</h2>
+      <h2 className="text-fs-24 font-medium uppercase leading-tight lg:text-fs-32">{children}</h2>
       {href && (
-        <Link href={href} className="shrink-0 text-[16px] font-medium underline underline-offset-4">
+        <Link href={href} className="shrink-0 text-fs-16 font-medium underline underline-offset-4">
           Shop All
         </Link>
       )}
@@ -48,13 +48,13 @@ export default async function HubPage({ params }: { params: Params }) {
       <nav aria-label={`${hub.title} categories`} className="border-b border-hairline-soft">
         <ul className="scrollbar-none mx-auto flex max-w-[1440px] gap-2 overflow-x-auto px-4 py-4 lg:px-12">
           <li>
-            <Link href={all} className="inline-flex h-10 items-center whitespace-nowrap rounded-pill bg-ink px-5 text-[14px] font-medium text-white transition hover:bg-charcoal">
+            <Link href={all} className="inline-flex h-10 items-center whitespace-nowrap rounded-pill bg-ink px-5 text-fs-14 font-medium text-white transition hover:bg-charcoal">
               All {hub.title}
             </Link>
           </li>
           {quick.map((t) => (
             <li key={t.href}>
-              <Link href={t.href} className="inline-flex h-10 items-center whitespace-nowrap rounded-pill border border-hairline px-5 text-[14px] font-medium transition hover:border-ink">
+              <Link href={t.href} className="inline-flex h-10 items-center whitespace-nowrap rounded-pill border border-hairline px-5 text-fs-14 font-medium transition hover:border-ink">
                 {t.label}
               </Link>
             </li>

@@ -35,22 +35,22 @@ export function CartLines({ compact = false, onNavigate }: { compact?: boolean; 
               />
               <div className="flex min-w-0 flex-1 flex-col">
                 <div className="flex justify-between gap-3">
-                  <Link href={`/product/${item.slug}`} onClick={onNavigate} className="text-[16px] font-medium leading-snug hover:underline">
+                  <Link href={`/product/${item.slug}`} onClick={onNavigate} className="text-fs-16 font-medium leading-snug hover:underline">
                     {item.name}
                   </Link>
-                  <span className="text-[16px] font-medium">{formatNaira(item.unitPriceKobo * item.qty)}</span>
+                  <span className="text-fs-16 font-medium">{formatNaira(item.unitPriceKobo * item.qty)}</span>
                 </div>
-                <p className="text-[14px] text-mute">{item.subtitle}</p>
-                <p className="text-[14px] text-mute">
+                <p className="text-fs-14 text-mute">{item.subtitle}</p>
+                <p className="text-fs-14 text-mute">
                   {item.color && `${item.color} · `}Size {item.size}
                 </p>
                 <div className="mt-auto flex items-center gap-3 pt-3">
                   <div className="flex h-9 items-center rounded-pill border border-hairline">
                     <button type="button" aria-label="Decrease quantity" className="flex size-9 items-center justify-center rounded-full transition hover:bg-cloud" onClick={() => setQty(item.key, item.qty - 1)}>−</button>
-                    <motion.span key={item.qty} initial={{ y: -6, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="w-6 text-center text-[14px] font-medium">{item.qty}</motion.span>
+                    <motion.span key={item.qty} initial={{ y: -6, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="w-6 text-center text-fs-14 font-medium">{item.qty}</motion.span>
                     <button type="button" aria-label="Increase quantity" className="flex size-9 items-center justify-center rounded-full transition hover:bg-cloud" onClick={() => setQty(item.key, item.qty + 1)}>+</button>
                   </div>
-                  <button type="button" onClick={() => remove(item.key)} className="text-[14px] font-medium text-mute underline underline-offset-2 transition hover:text-ink">
+                  <button type="button" onClick={() => remove(item.key)} className="text-fs-14 font-medium text-mute underline underline-offset-2 transition hover:text-ink">
                     Remove
                   </button>
                 </div>

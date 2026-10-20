@@ -23,7 +23,7 @@ const rowClass = "flex w-full items-center gap-2.5 rounded-xl px-2 py-1.5 text-l
 
 // account group: quieter than the main links; the list itself is centred as a block
 // (see below) so every row shares one left edge
-const utilClass = `${rowClass} text-[13px] text-ink/60 hover:text-ink`;
+const utilClass = `${rowClass} text-fs-13 text-ink/60 hover:text-ink`;
 
 const Icon = ({ d }: { d: string }) => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden className="shrink-0">
@@ -75,7 +75,7 @@ export function MobileMenu({ onClose }: { onClose: () => void }) {
       <motion.ul variants={list(0)} initial="hidden" animate="show" className="mt-2 space-y-1">
         {NAV.map((item) => (
           <motion.li key={item.key} variants={row}>
-            <Link href={item.href} onClick={onClose} className={`${rowClass} text-[14px]`}>
+            <Link href={item.href} onClick={onClose} className={`${rowClass} text-fs-14`}>
               <span className="relative size-8 shrink-0 overflow-hidden rounded-lg bg-cloud">
                 <Image src={unsplash(item.photo, 120)} alt="" fill sizes="32px" className="object-cover" />
               </span>

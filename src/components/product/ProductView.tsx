@@ -106,14 +106,14 @@ export function ProductView({ product }: { product: Product }) {
 
       {/* details */}
       <div className="lg:sticky lg:top-24 lg:self-start">
-        {product.badge && <p className="text-[16px] font-medium text-sale">{product.badge}</p>}
-        <h1 className="text-[32px] font-medium leading-tight">{product.name}</h1>
-        <p className="text-[16px] text-charcoal">{product.subtitle}</p>
-        <p className="mt-3 flex items-baseline gap-3 text-[24px] font-medium">
+        {product.badge && <p className="text-fs-16 font-medium text-sale">{product.badge}</p>}
+        <h1 className="text-fs-32 font-medium leading-tight">{product.name}</h1>
+        <p className="text-fs-16 text-charcoal">{product.subtitle}</p>
+        <p className="mt-3 flex items-baseline gap-3 text-fs-24 font-medium">
           {onSale ? (
             <>
               <span className="text-sale">{formatNaira(product.salePriceKobo!)}</span>
-              <span className="text-[16px] text-mute line-through">{formatNaira(product.priceKobo)}</span>
+              <span className="text-fs-16 text-mute line-through">{formatNaira(product.priceKobo)}</span>
             </>
           ) : (
             formatNaira(product.priceKobo)
@@ -122,7 +122,7 @@ export function ProductView({ product }: { product: Product }) {
 
         {product.colors.length > 0 && (
           <div className="mt-8">
-            <p className="mb-3 text-[16px] font-medium">Colour: <span className="font-normal text-mute">{color?.name}</span></p>
+            <p className="mb-3 text-fs-16 font-medium">Colour: <span className="font-normal text-mute">{color?.name}</span></p>
             <ul className="flex flex-wrap gap-3">
               {product.colors.map((c, i) => (
                 <li key={c.name} className="relative">
@@ -140,7 +140,7 @@ export function ProductView({ product }: { product: Product }) {
 
         <motion.div ref={sizeRef} animate={shake} className="mt-8 scroll-mt-24">
           <div className="mb-3 flex items-center justify-between">
-            <p className={cn("text-[16px] font-medium", error && "text-sale")}>{error ? "Please select a size" : "Select Size"}</p>
+            <p className={cn("text-fs-16 font-medium", error && "text-sale")}>{error ? "Please select a size" : "Select Size"}</p>
           </div>
           <div className="grid grid-cols-4 gap-2">
             {product.sizes.map((s) => (
@@ -150,7 +150,7 @@ export function ProductView({ product }: { product: Product }) {
                 aria-pressed={size === s}
                 onClick={() => { setSize(s); setError(false); }}
                 className={cn(
-                  "h-12 rounded-pill border text-[16px] font-medium transition active:scale-95",
+                  "h-12 rounded-pill border text-fs-16 font-medium transition active:scale-95",
                   size === s ? "border-ink bg-ink text-white" : error ? "border-sale" : "border-hairline hover:border-ink",
                 )}
               >

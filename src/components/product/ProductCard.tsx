@@ -29,13 +29,13 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
           <FramedImage src={product.images[0]} label={product.name} className="aspect-square" />
 
           {product.badge && (
-            <span className="absolute left-5 top-5 z-20 rounded-pill border border-hairline bg-white px-3 py-1 text-[12px] font-medium">
+            <span className="absolute left-5 top-5 z-20 rounded-pill border border-hairline bg-white px-3 py-1 text-fs-12 font-medium">
               {product.badge}
             </span>
           )}
 
           {/* sizes slide up on hover */}
-          <div className="absolute inset-x-0 bottom-0 z-20 hidden translate-y-full truncate bg-white/95 px-5 py-3 text-[12px] font-medium transition-transform duration-300 ease-out group-hover:translate-y-0 md:block">
+          <div className="absolute inset-x-0 bottom-0 z-20 hidden translate-y-full truncate bg-white/95 px-5 py-3 text-fs-12 font-medium transition-transform duration-300 ease-out group-hover:translate-y-0 md:block">
             <span className="text-mute">Sizes </span>
             {product.sizes.slice(0, 6).join("  ")}
             {product.sizes.length > 6 && "  …"}
@@ -55,9 +55,9 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
               ))}
             </ul>
           )}
-          <h3 className="truncate text-[16px] font-medium leading-snug">{product.name}</h3>
-          <p className="truncate text-[14px] font-medium text-mute">{product.subtitle}</p>
-          <p className="flex flex-wrap items-baseline gap-x-2 pt-1.5 text-[16px] font-medium">
+          <h3 className="truncate text-fs-16 font-medium leading-snug">{product.name}</h3>
+          <p className="truncate text-fs-14 font-medium text-mute">{product.subtitle}</p>
+          <p className="flex flex-wrap items-baseline gap-x-2 pt-1.5 text-fs-16 font-medium">
             {onSale ? (
               <>
                 <span className="text-sale">{formatNaira(product.salePriceKobo!)}</span>

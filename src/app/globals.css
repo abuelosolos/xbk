@@ -19,8 +19,49 @@
 }
 
 @theme inline {
+  /* Responsive type scale: values come from --fs-* below, so one class resizes per breakpoint */
+  --text-fs-32: var(--fs-32);
+  --text-fs-24: var(--fs-24);
+  --text-fs-16: var(--fs-16);
+  --text-fs-14: var(--fs-14);
+  --text-fs-13: var(--fs-13);
+  --text-fs-12: var(--fs-12);
   --font-sans: var(--font-inter), "Helvetica Now Text", Helvetica, Arial, sans-serif;
   --font-display: var(--font-bebas), "Futura", Impact, sans-serif;
+}
+
+/* Type scale: phone < 640, tablet 640-1023, desktop >= 1024 (DESIGN.md sizes) */
+:root {
+  --fs-32: 26px;
+  --fs-24: 20px;
+  --fs-16: 15px;
+  --fs-14: 13px;
+  --fs-13: 12px;
+  --fs-12: 11px;
+}
+@media (min-width: 640px) {
+  :root {
+    --fs-32: 28px;
+    --fs-24: 22px;
+  }
+}
+@media (min-width: 1024px) {
+  :root {
+    --fs-32: 32px;
+    --fs-24: 24px;
+    --fs-16: 16px;
+    --fs-14: 14px;
+    --fs-13: 13px;
+    --fs-12: 12px;
+  }
+}
+/* keep form controls at 16px below desktop so iOS Safari doesn't zoom on focus */
+@media (max-width: 1023px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
 }
 
 @layer base {
@@ -43,14 +84,14 @@
 }
 
 @layer utilities {
-  /* Campaign headline: 96px / 0.9 / uppercase, scales down on small screens */
+  /* Campaign headline: 96px / 0.9 / uppercase, scales with viewport width */
   .display-campaign {
     font-family: var(--font-display);
     font-weight: 400;
     text-transform: uppercase;
     line-height: 0.9;
     letter-spacing: 0;
-    font-size: clamp(48px, 9vw, 96px);
+    font-size: clamp(40px, 8vw, 96px);
   }
   .scrollbar-none {
     scrollbar-width: none;

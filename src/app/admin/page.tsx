@@ -30,17 +30,17 @@ export default async function AdminDashboard() {
 
   return (
     <>
-      <h1 className="mb-6 text-[32px] font-medium leading-tight">Dashboard</h1>
+      <h1 className="mb-6 text-fs-32 font-medium leading-tight">Dashboard</h1>
       {!hasDb() && (
-        <p className="mb-6 bg-cloud p-4 text-[14px] text-charcoal">
+        <p className="mb-6 bg-cloud p-4 text-fs-14 text-charcoal">
           DATABASE_URL isn&apos;t set, so figures are zero and the storefront is using the demo catalogue.
         </p>
       )}
       <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
         {cards.map((c) => (
           <div key={c.label} className="bg-cloud p-5">
-            <p className="text-[14px] text-mute">{c.label}</p>
-            <p className="mt-2 text-[24px] font-medium">{c.value}</p>
+            <p className="text-fs-14 text-mute">{c.label}</p>
+            <p className="mt-2 text-fs-24 font-medium">{c.value}</p>
           </div>
         ))}
       </div>

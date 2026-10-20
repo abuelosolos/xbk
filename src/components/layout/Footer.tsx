@@ -16,7 +16,7 @@ function LinkList({ links, className }: { links: (typeof COLUMNS)[number]["links
     <ul className={className}>
       {links.map(([label, href]) => (
         <li key={label}>
-          <Link href={href} className="text-[14px] font-medium text-mute transition hover:text-ink">
+          <Link href={href} className="text-fs-14 font-medium text-mute transition hover:text-ink">
             {label}
           </Link>
         </li>
@@ -35,14 +35,14 @@ export function Footer() {
             <LinkList links={col.links} className="space-y-3" />
           </Disclosure>
         ))}
-        <p className="flex items-center gap-2 border-b border-hairline py-6 text-[14px] font-medium text-mute">
+        <p className="flex items-center gap-2 border-b border-hairline py-6 text-fs-14 font-medium text-mute">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
             <circle cx="12" cy="12" r="9" />
             <path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z" />
           </svg>
           Nigeria
         </p>
-        <div className="space-y-4 py-6 text-[14px] font-medium text-mute">
+        <div className="space-y-4 py-6 text-fs-14 font-medium text-mute">
           <p>© 2026 XBK. All Rights Reserved.</p>
           <ul className="space-y-3">
             {LEGAL.map(([label, href]) => (
@@ -62,13 +62,13 @@ export function Footer() {
           </div>
           {COLUMNS.map((col) => (
             <div key={col.title}>
-              <h3 className="mb-4 text-[16px] font-medium">{col.title}</h3>
+              <h3 className="mb-4 text-fs-16 font-medium">{col.title}</h3>
               <LinkList links={col.links} className="space-y-2" />
             </div>
           ))}
         </div>
         <div className="border-t border-hairline-soft">
-          <div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-3 px-4 py-5 text-[12px] font-medium text-mute lg:px-12">
+          <div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-3 px-4 py-5 text-fs-12 font-medium text-mute lg:px-12">
             <span>© 2026 XBK. All Rights Reserved.</span>
             <span className="flex gap-5">
               {LEGAL.map(([label, href]) => (

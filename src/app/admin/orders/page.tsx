@@ -12,12 +12,12 @@ export default async function AdminOrdersPage() {
 
   return (
     <>
-      <h1 className="mb-6 text-[32px] font-medium leading-tight">Orders</h1>
+      <h1 className="mb-6 text-fs-32 font-medium leading-tight">Orders</h1>
       {rows.length === 0 ? (
-        <p className="text-[16px] text-mute">{hasDb() ? "No orders yet." : "Set DATABASE_URL to see orders."}</p>
+        <p className="text-fs-16 text-mute">{hasDb() ? "No orders yet." : "Set DATABASE_URL to see orders."}</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-[14px]">
+          <table className="w-full text-left text-fs-14">
             <thead className="border-b border-hairline text-mute">
               <tr>
                 <th className="py-3 pr-4 font-medium">Ref</th>

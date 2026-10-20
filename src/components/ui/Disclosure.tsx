@@ -10,7 +10,7 @@ export function Disclosure({
   title,
   children,
   className,
-  bodyClassName = "pb-6 text-[16px] leading-relaxed text-charcoal",
+  bodyClassName = "pb-6 text-fs-16 leading-relaxed text-charcoal",
 }: {
   title: string;
   children: ReactNode;
@@ -20,7 +20,7 @@ export function Disclosure({
   const [open, setOpen] = useState(false);
   return (
     <div className={cn("border-b border-hairline", className)}>
-      <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)} className="flex w-full items-center justify-between py-6 text-left text-[16px] font-medium">
+      <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)} className="flex w-full items-center justify-between py-6 text-left text-fs-16 font-medium">
         {title}
         <motion.svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.25, ease: EASE }}>
           <path d="m6 9 6 6 6-6" />
