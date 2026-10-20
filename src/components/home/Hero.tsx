@@ -1,26 +1,36 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "motion/react";
-import { LogoMark } from "@/components/brand/Logo";
 import { ButtonLink } from "@/components/ui/Button";
+import { unsplash } from "@/lib/images";
 import { EASE } from "@/lib/motion";
 
 const LINES = ["Built", "to move."];
 
 /**
- * Campaign tile: full-bleed black stage with a 96px uppercase headline.
- * Swap the background layer for campaign photography when it's ready.
+ * Campaign tile: full-bleed black-and-white campaign photo with a 96px uppercase
+ * headline. A bottom-up ink gradient keeps the white type legible.
  */
 export function Hero() {
   return (
     <section className="relative isolate flex h-[min(82vh,760px)] min-h-[480px] items-end overflow-hidden bg-ink text-white">
       <motion.div
         aria-hidden
-        className="absolute -right-[8%] top-1/2 -z-10 w-[70%] max-w-[900px] -translate-y-1/2 text-white/10"
-        animate={{ y: [0, -14, 0] }}
-        transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute inset-0 -z-10"
+        initial={{ scale: 1.08 }}
+        animate={{ scale: 1 }}
+        transition={{ duration: 1.6, ease: EASE }}
       >
-        <LogoMark className="w-full" />
+        <Image
+          src={unsplash("_1BshZ602EM", 2000)}
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover grayscale"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/30 to-ink/10" />
       </motion.div>
 
       <div className="mx-auto w-full max-w-[1440px] px-4 pb-12 lg:px-12 lg:pb-16">

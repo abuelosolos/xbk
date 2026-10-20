@@ -7,6 +7,7 @@ export interface CartItem {
   slug: string;
   name: string;
   subtitle: string;
+  image?: string | null;
   unitPriceKobo: number;
   size: string;
   color: string;
