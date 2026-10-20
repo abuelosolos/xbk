@@ -11,6 +11,7 @@ export interface Product {
   name: string;
   subtitle: string;
   category: string;
+  subcategory: string | null;
   gender: Gender;
   /** All money values are integer kobo (NGN minor units). */
   priceKobo: number;

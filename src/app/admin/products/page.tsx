@@ -30,7 +30,7 @@ export default async function AdminProductsPage() {
             {products.map((p) => (
               <tr key={p.id}>
                 <td className="py-3 pr-4 font-medium">{p.name}</td>
-                <td className="py-3 pr-4 capitalize">{p.category} · {p.gender}</td>
+                <td className="py-3 pr-4 capitalize">{p.category}{p.subcategory && ` / ${p.subcategory}`} · {p.gender}</td>
                 <td className="py-3 pr-4">
                   {p.salePriceKobo ? <><span className="text-sale">{formatNaira(p.salePriceKobo)}</span> <span className="text-mute line-through">{formatNaira(p.priceKobo)}</span></> : formatNaira(p.priceKobo)}
                 </td>
@@ -50,6 +50,7 @@ export default async function AdminProductsPage() {
           <input name="slug" required placeholder="slug-like-this" className={input} />
           <input name="subtitle" required placeholder="Subtitle (e.g. Men's Road Running Shoes)" className={`${input} sm:col-span-2`} />
           <input name="category" required placeholder="Category (footwear, clothing…)" className={input} />
+          <input name="subcategory" placeholder="Subcategory (running, tops…; optional)" className={input} />
           <select name="gender" className={input} defaultValue="unisex">
             <option value="men">Men</option><option value="women">Women</option>
             <option value="kids">Kids</option><option value="unisex">Unisex</option>

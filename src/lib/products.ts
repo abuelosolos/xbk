@@ -12,6 +12,7 @@ const toProduct = (r: Row): Product => ({
   name: r.name,
   subtitle: r.subtitle,
   category: r.category,
+  subcategory: r.subcategory,
   gender: r.gender,
   priceKobo: r.priceKobo,
   salePriceKobo: r.salePriceKobo,

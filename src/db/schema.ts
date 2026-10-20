@@ -74,6 +74,7 @@ export const products = pgTable(
     name: text("name").notNull(),
     subtitle: text("subtitle").notNull(),
     category: text("category").notNull(),
+    subcategory: text("subcategory"),
     gender: text("gender").$type<Gender>().notNull(),
     priceKobo: integer("price_kobo").notNull(),
     salePriceKobo: integer("sale_price_kobo"),
@@ -85,7 +86,7 @@ export const products = pgTable(
     stock: integer("stock").notNull().default(0),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
-  (t) => [index("products_category_idx").on(t.category), index("products_gender_idx").on(t.gender)],
+  (t) => [index("products_category_idx").on(t.category), index("products_subcategory_idx").on(t.subcategory), index("products_gender_idx").on(t.gender)],
 );
 
 export const orderStatus = pgEnum("order_status", ["pending", "paid", "failed", "shipped"]);
