@@ -1,9 +1,11 @@
+import Image from "next/image";
 import Link from "next/link";
 import { CategoryRail } from "@/components/home/CategoryRail";
 import { Hero } from "@/components/home/Hero";
 import { ProductRow } from "@/components/home/ProductRow";
 import { Reveal } from "@/components/motion/Reveal";
 import { ButtonLink } from "@/components/ui/Button";
+import { unsplash } from "@/lib/images";
 import { getAllProducts } from "@/lib/products";
 
 function SectionHeading({ children, href }: { children: React.ReactNode; href?: string }) {
@@ -37,14 +39,22 @@ export default async function HomePage() {
         <Reveal>
           <section className="grid gap-2 md:grid-cols-2">
             {[
-              { title: "Run", sub: "Road and trail, built light.", href: "/shop?category=footwear", tone: "bg-ink text-white" },
-              { title: "Train", sub: "Layers that keep up.", href: "/shop?category=clothing", tone: "bg-cloud text-ink" },
+              { title: "Run", sub: "Road and trail, built light.", href: "/shop?category=footwear", photo: "Or4_-uT-S5c" },
+              { title: "Train", sub: "Layers that keep up.", href: "/shop?category=clothing", photo: "1eJ9cG97BD8" },
             ].map((tile) => (
-              <div key={tile.title} className={`relative flex aspect-[4/3] items-end p-6 lg:p-10 ${tile.tone}`}>
+              <div key={tile.title} className="group relative isolate flex aspect-[4/3] items-end overflow-hidden bg-ink p-6 text-white lg:p-10">
+                <Image
+                  src={unsplash(tile.photo, 1400)}
+                  alt=""
+                  fill
+                  sizes="(min-width:768px) 50vw, 100vw"
+                  className="-z-10 object-cover grayscale transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+                />
+                <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-ink/80 via-ink/20 to-transparent" />
                 <div>
                   <h3 className="display-campaign">{tile.title}</h3>
-                  <p className="mt-2 text-[16px] opacity-70">{tile.sub}</p>
-                  <ButtonLink href={tile.href} variant={tile.tone.includes("bg-ink") ? "outline" : "primary"} className="mt-5">
+                  <p className="mt-2 text-[16px] opacity-80">{tile.sub}</p>
+                  <ButtonLink href={tile.href} variant="outline" className="mt-5">
                     Explore
                   </ButtonLink>
                 </div>

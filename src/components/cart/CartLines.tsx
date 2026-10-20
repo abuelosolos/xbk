@@ -27,7 +27,9 @@ export function CartLines({ compact = false, onNavigate }: { compact?: boolean; 
           >
             <div className="flex gap-4 py-5">
               <FramedImage
+                src={item.image}
                 label={item.name}
+                sizes="144px"
                 className={compact ? "size-24 shrink-0" : "size-28 shrink-0 sm:size-36"}
                 inset={compact ? 6 : 8}
               />

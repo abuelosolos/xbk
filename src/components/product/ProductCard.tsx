@@ -24,7 +24,8 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
       className="group"
     >
       <Link href={`/product/${product.slug}`} className="block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink">
-        <div className="relative">
+        {/* overflow-hidden keeps the hidden size strip inside the image instead of covering the text below */}
+        <div className="relative overflow-hidden">
           <FramedImage src={product.images[0]} label={product.name} className="aspect-square" />
 
           {product.badge && (
@@ -34,14 +35,14 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
           )}
 
           {/* sizes slide up on hover */}
-          <div className="absolute inset-x-0 bottom-0 z-20 translate-y-full bg-white/95 px-5 py-3 text-[12px] font-medium transition-transform duration-300 ease-out group-hover:translate-y-0">
+          <div className="absolute inset-x-0 bottom-0 z-20 hidden translate-y-full truncate bg-white/95 px-5 py-3 text-[12px] font-medium transition-transform duration-300 ease-out group-hover:translate-y-0 md:block">
             <span className="text-mute">Sizes </span>
             {product.sizes.slice(0, 6).join("  ")}
             {product.sizes.length > 6 && "  …"}
           </div>
         </div>
 
-        <div className="mt-3 space-y-0.5">
+        <div className="mt-3 min-w-0 space-y-0.5">
           {product.colors.length > 1 && (
             <ul className="mb-2 flex items-center gap-1.5" aria-label="Available colours">
               {product.colors.slice(0, 5).map((c) => (
@@ -54,8 +55,8 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
               ))}
             </ul>
           )}
-          <h3 className="text-[16px] font-medium leading-snug">{product.name}</h3>
-          <p className="text-[14px] font-medium text-mute">{product.subtitle}</p>
+          <h3 className="truncate text-[16px] font-medium leading-snug">{product.name}</h3>
+          <p className="truncate text-[14px] font-medium text-mute">{product.subtitle}</p>
           <p className="flex flex-wrap items-baseline gap-x-2 pt-1.5 text-[16px] font-medium">
             {onSale ? (
               <>
