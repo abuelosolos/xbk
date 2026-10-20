@@ -31,11 +31,6 @@ export default async function HomePage() {
       <Hero />
 
       <div className="mx-auto max-w-[1440px] space-y-12 px-4 pt-12 lg:px-12">
-        <section>
-          <Reveal><SectionHeading href="/shop">Trending Now</SectionHeading></Reveal>
-          <ProductRow products={trending} />
-        </section>
-
         <Reveal>
           <section className="grid gap-2 md:grid-cols-2">
             {[
@@ -62,6 +57,11 @@ export default async function HomePage() {
             ))}
           </section>
         </Reveal>
+
+        <section>
+          <Reveal><SectionHeading href="/shop">Trending Now</SectionHeading></Reveal>
+          <ProductRow products={trending} />
+        </section>
 
         <section>
           <Reveal><SectionHeading>Shop by Category</SectionHeading></Reveal>
