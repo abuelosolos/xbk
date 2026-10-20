@@ -3,9 +3,12 @@ import type { NextConfig } from "next";
 const config: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  // Demo photography comes from Unsplash (see lib/images.ts). Add your own
-  // image host here once product photography is hosted (e.g. Cloudinary, R2).
+  // Demo photography comes from Unsplash (lib/images.ts) and is loaded by
+  // lib/image-loader.ts. When product photography moves to your own host
+  // (e.g. Cloudinary, R2), add it here and extend the loader for it.
   images: {
+    loader: "custom",
+    loaderFile: "./src/lib/image-loader.ts",
     remotePatterns: [
       { protocol: "https", hostname: "unsplash.com", pathname: "/photos/**" },
       { protocol: "https", hostname: "images.unsplash.com" },
