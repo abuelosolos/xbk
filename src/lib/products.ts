@@ -2,6 +2,7 @@ import { desc, eq, inArray } from "drizzle-orm";
 import { getDb, hasDb } from "@/db";
 import { MOCK_PRODUCTS } from "@/db/mock-products";
 import { products } from "@/db/schema";
+import { previewImages } from "./images";
 import type { Product } from "./types";
 
 type Row = typeof products.$inferSelect;
@@ -20,7 +21,7 @@ const toProduct = (r: Row): Product => ({
   sizes: r.sizes,
   badge: r.badge,
   description: r.description,
-  images: r.images,
+  images: r.images.length ? r.images : previewImages(r.category, r.subcategory),
   stock: r.stock,
 });
 

@@ -31,7 +31,6 @@ export function CartLines({ compact = false, onNavigate }: { compact?: boolean; 
                 label={item.name}
                 sizes="144px"
                 className={compact ? "size-24 shrink-0" : "size-28 shrink-0 sm:size-36"}
-                inset={compact ? 6 : 8}
               />
               <div className="flex min-w-0 flex-1 flex-col">
                 <div className="flex justify-between gap-3">

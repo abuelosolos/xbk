@@ -1,13 +1,12 @@
 import type { ImageLoaderProps } from "next/image";
 
 /**
- * next/image loader. Unsplash photo links (see lib/images.ts) are download
- * endpoints that redirect to the CDN file, which the hosted image optimizer
- * won't follow, so the browser loads them directly at the requested width.
+ * next/image loader. Unsplash CDN links (see lib/images.ts) are resized by the
+ * CDN itself via `w`, so the browser loads them directly at the requested width.
  * Anything else (local files) is served as-is.
  */
 export default function imageLoader({ src, width }: ImageLoaderProps) {
-  if (src.startsWith("https://unsplash.com/photos/")) {
+  if (src.startsWith("https://images.unsplash.com/")) {
     const url = new URL(src);
     url.searchParams.set("w", String(width));
     return url.toString();

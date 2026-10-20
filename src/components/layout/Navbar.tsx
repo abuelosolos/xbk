@@ -12,32 +12,30 @@ import { NAV } from "@/lib/nav";
 import { cartCount, useCart } from "@/store/cart";
 import { useUI } from "@/store/ui";
 
-function UtilityBar() {
+/** Account entry for md+ (the mobile menu carries its own account rows). */
+function AccountLink() {
   const { data: session } = authClient.useSession();
   const role = (session?.user as { role?: string } | undefined)?.role;
+  const label = session ? `Account, ${session.user.name.split(" ")[0]}` : "Sign in";
 
   return (
-    <div className="hidden h-9 items-center justify-end gap-4 bg-cloud px-12 text-fs-12 font-medium md:flex">
-      <Link href="/shop" className="hover:text-mute">Help</Link>
-      <span aria-hidden className="h-3 w-px bg-hairline" />
-      {session ? (
-        <>
-          {role === "admin" && (
-            <>
-              <Link href="/admin" className="hover:text-mute">Admin</Link>
-              <span aria-hidden className="h-3 w-px bg-hairline" />
-            </>
-          )}
-          <Link href="/account" className="hover:text-mute">Hi, {session.user.name.split(" ")[0]}</Link>
-        </>
-      ) : (
-        <>
-          <Link href="/sign-up" className="hover:text-mute">Join Us</Link>
-          <span aria-hidden className="h-3 w-px bg-hairline" />
-          <Link href="/sign-in" className="hover:text-mute">Sign In</Link>
-        </>
+    <>
+      {role === "admin" && (
+        <Link href="/admin" className="hidden h-10 items-center rounded-pill px-3 text-fs-14 font-medium transition hover:bg-cloud md:flex">
+          Admin
+        </Link>
       )}
-    </div>
+      <Link
+        href={session ? "/account" : "/sign-in"}
+        aria-label={label}
+        title={label}
+        className="hidden size-10 items-center justify-center rounded-full transition hover:bg-cloud active:scale-90 md:flex"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+          <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0" />
+        </svg>
+      </Link>
+    </>
   );
 }
 
@@ -80,7 +78,6 @@ export function Navbar() {
 
   return (
     <>
-      <UtilityBar />
 
       {/* dim the page while a mega-menu is open */}
       <AnimatePresence>
@@ -164,6 +161,8 @@ export function Navbar() {
                 className="w-28 bg-transparent text-fs-16 outline-none placeholder:text-mute"
               />
             </form>
+
+            <AccountLink />
 
             <button
               type="button"

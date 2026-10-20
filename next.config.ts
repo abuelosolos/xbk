@@ -10,7 +10,6 @@ const config: NextConfig = {
     loader: "custom",
     loaderFile: "./src/lib/image-loader.ts",
     remotePatterns: [
-      { protocol: "https", hostname: "unsplash.com", pathname: "/photos/**" },
       { protocol: "https", hostname: "images.unsplash.com" },
     ],
   },

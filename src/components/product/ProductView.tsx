@@ -84,7 +84,7 @@ export function ProductView({ product }: { product: Product }) {
                 onClick={() => setView(i)}
                 className={cn("block size-16 overflow-hidden transition lg:size-[72px]", view === i ? "ring-2 ring-ink" : "opacity-70 hover:opacity-100")}
               >
-                <FramedImage src={src} label={`${product.name} view ${i + 1}`} className="size-full" inset={4} sizes="96px" />
+                <FramedImage src={src} label={`${product.name} view ${i + 1}`} className="size-full" sizes="96px" />
               </button>
             </li>
           ))}
@@ -98,7 +98,7 @@ export function ProductView({ product }: { product: Product }) {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.25, ease: EASE }}
             >
-              <FramedImage src={views[view]} label={product.name} className="aspect-square lg:aspect-[4/5]" inset={20} priority sizes="(min-width:1024px) 60vw, 100vw" />
+              <FramedImage src={views[view]} label={product.name} className="aspect-square lg:aspect-[4/5]" priority sizes="(min-width:1024px) 60vw, 100vw" />
             </motion.div>
           </AnimatePresence>
         </div>

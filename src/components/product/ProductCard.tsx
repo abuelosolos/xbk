@@ -25,7 +25,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
     >
       <Link href={`/product/${product.slug}`} className="block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink">
         {/* overflow-hidden keeps the hidden size strip inside the image instead of covering the text below */}
-        <div className="relative overflow-hidden">
+        <div className="relative overflow-hidden rounded-[12px]">
           <FramedImage src={product.images[0]} label={product.name} className="aspect-square" />
 
           {product.badge && (
