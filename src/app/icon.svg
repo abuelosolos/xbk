@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-14 -2 128 68" fill="none">
+  <rect x="-14" y="-2" width="128" height="68" fill="#ffffff"/>
+  <defs>
+    <linearGradient id="fade" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="64">
+      <stop offset="0" stop-color="#111111" stop-opacity="0.2"/>
+      <stop offset="0.3" stop-color="#111111" stop-opacity="1"/>
+      <stop offset="1" stop-color="#111111" stop-opacity="1"/>
+    </linearGradient>
+  </defs>
+  <polygon points="50,5 5,59 95,59" fill="url(#fade)" stroke="url(#fade)" stroke-width="9" stroke-linejoin="round"/>
+</svg>
