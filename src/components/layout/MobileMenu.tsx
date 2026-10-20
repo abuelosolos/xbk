@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, type Variants } from "motion/react";
 import type { ReactNode } from "react";
-import { LogoMark } from "@/components/brand/Logo";
 import { authClient } from "@/lib/auth-client";
 import { unsplash } from "@/lib/images";
 import { EASE } from "@/lib/motion";
@@ -48,8 +47,8 @@ function UtilityRow({ icon, children, ...props }: { icon: string; children: Reac
 }
 
 /**
- * Mobile/tablet menu: a white half-width sheet that drops down from under the nav bar
- * on the right and fills the rest of the screen height. Rendered inside the sticky
+ * Mobile/tablet menu: a white half-width sheet, 70% of the screen tall, that drops down from
+ * under the nav bar with a small gap to the right edge. Rendered inside the sticky
  * header so it stays anchored to the bar; tapping the dimmed page closes it.
  */
 export function MobileMenu({ onClose }: { onClose: () => void }) {
@@ -62,14 +61,12 @@ export function MobileMenu({ onClose }: { onClose: () => void }) {
       id="mobile-menu"
       role="dialog"
       aria-label="Menu"
-      className="absolute right-0 top-full z-[70] flex h-[calc(100dvh-64px)] w-1/2 md:h-[calc(100dvh-100px)] min-w-[200px] max-w-sm flex-col overflow-y-auto rounded-bl-[24px] border-b border-l border-hairline-soft bg-white p-3 text-ink lg:hidden"
+      className="absolute right-3 top-full z-[70] flex h-[70dvh] w-1/2 min-w-[200px] max-w-sm flex-col overflow-y-auto rounded-b-[24px] border border-t-0 border-hairline-soft bg-white p-3 text-ink lg:hidden"
       initial={{ clipPath: "inset(0 0 100% 0)" }}
       animate={{ clipPath: "inset(0 0 0% 0)" }}
       exit={{ clipPath: "inset(0 0 100% 0)", transition: { duration: 0.22, ease: EASE } }}
       transition={{ duration: 0.35, ease: EASE }}
     >
-      <LogoMark className="mx-2 mb-3 mt-1 w-6 shrink-0" />
-
       <motion.ul variants={list(0)} initial="hidden" animate="show" className="space-y-1">
         {NAV.map((item) => (
           <motion.li key={item.key} variants={row}>
