@@ -21,8 +21,9 @@ const row: Variants = {
 
 const rowClass = "flex w-full items-center gap-2.5 rounded-xl px-2 py-1.5 text-left font-medium transition hover:bg-cloud active:scale-[0.98]";
 
-// account group: centred, quieter than the main links
-const utilClass = `${rowClass} justify-center text-[13px] text-ink/60 hover:text-ink`;
+// account group: quieter than the main links; the list itself is centred as a block
+// (see below) so every row shares one left edge
+const utilClass = `${rowClass} text-[13px] text-ink/60 hover:text-ink`;
 
 const Icon = ({ d }: { d: string }) => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden className="shrink-0">
@@ -65,7 +66,7 @@ export function MobileMenu({ onClose }: { onClose: () => void }) {
       id="mobile-menu"
       role="dialog"
       aria-label="Menu"
-      className="absolute right-3 top-2 z-[70] flex h-[70dvh] w-1/2 min-w-[200px] max-w-sm origin-top-right flex-col overflow-y-auto rounded-[24px] border border-hairline-soft bg-white p-3 text-ink lg:hidden"
+      className="absolute right-3 top-2 z-[70] flex h-[70dvh] w-1/2 min-w-[200px] max-w-sm origin-top-right flex-col overflow-y-auto rounded-[24px] bg-white p-3 text-ink lg:hidden"
       initial={{ opacity: 0, scale: 0.6 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.18, ease: EASE } }}
@@ -85,7 +86,7 @@ export function MobileMenu({ onClose }: { onClose: () => void }) {
       </motion.ul>
 
       {/* account group sits at the bottom of the sheet */}
-      <motion.ul variants={list(NAV.length)} initial="hidden" animate="show" className="mt-auto space-y-0.5 pt-6">
+      <motion.ul variants={list(NAV.length)} initial="hidden" animate="show" className="mx-auto mt-auto w-fit space-y-0.5 pt-6">
         <UtilityRow href="/account" onClick={onClose} icon="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0">
           {session ? `Hi, ${session.user.name.split(" ")[0]}` : "Account"}
         </UtilityRow>
