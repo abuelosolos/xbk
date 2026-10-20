@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import { useState, type ReactNode } from "react";
+import { PRODUCT_TYPES } from "@/lib/collections";
 import { PRICE_BUCKETS, type Filters, type PriceBucket } from "@/lib/filters";
 import { EASE } from "@/lib/motion";
 import type { Gender } from "@/lib/types";
@@ -10,6 +11,7 @@ import { cn } from "@/lib/utils";
 export interface Facets {
   genders: Gender[];
   categories: string[];
+  types: string[];
   sizes: string[];
   colors: { name: string; hex: string }[];
 }
@@ -91,6 +93,21 @@ export function FilterPanel({
           ))}
         </ul>
       </Group>
+
+      {facets.types.length > 0 && (
+        <Group title="Type">
+          <ul className="space-y-2">
+            {PRODUCT_TYPES.filter((t) => facets.types.includes(t.slug)).map((t) => (
+              <li key={t.slug}>
+                <label className="flex cursor-pointer items-center gap-3 text-[16px]">
+                  <input type="checkbox" className="size-4 accent-ink" checked={filters.types.includes(t.slug)} onChange={() => onChange({ types: toggle(filters.types, t.slug) })} />
+                  {t.label}
+                </label>
+              </li>
+            ))}
+          </ul>
+        </Group>
+      )}
 
       <Group title="Sale &amp; Offers">
         <label className="flex cursor-pointer items-center gap-3 text-[16px]">

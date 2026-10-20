@@ -1,10 +1,12 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ProductCard } from "@/components/product/ProductCard";
 import { Button } from "@/components/ui/Button";
 import { FilterPanel, type Facets } from "@/components/shop/FilterPanel";
+import { PRODUCT_TYPES, matchesType } from "@/lib/collections";
 import {
   EMPTY_FILTERS,
   activeFilterCount,
@@ -26,11 +28,14 @@ export function ShopClient({
   initial,
   initialSort = "featured",
   title = "All Products",
+  crumbs = [],
 }: {
   products: Product[];
   initial: Partial<Filters>;
   initialSort?: SortKey;
   title?: string;
+  /** trail back to the hub page(s) this listing was entered from */
+  crumbs?: { label: string; href: string }[];
 }) {
   const [filters, setFilters] = useState<Filters>({ ...EMPTY_FILTERS, ...initial });
   const [sort, setSort] = useState<SortKey>(initialSort);
@@ -44,6 +49,7 @@ export function ShopClient({
     return {
       genders: [...new Set(products.map((p) => p.gender))],
       categories: [...new Set(products.map((p) => p.category))],
+      types: PRODUCT_TYPES.filter((t) => products.some((p) => matchesType(p, t.slug))).map((t) => t.slug),
       sizes: [...new Set(products.flatMap((p) => p.sizes))],
       colors: [...colors].map(([name, hex]) => ({ name, hex })),
     };
@@ -59,10 +65,22 @@ export function ShopClient({
   return (
     <div className="mx-auto max-w-[1440px] px-4 pt-8 lg:px-12">
       <div className="sticky top-16 z-30 -mx-4 flex items-center justify-between gap-4 border-b border-hairline-soft bg-white px-4 py-4 lg:-mx-12 lg:px-12">
-        <h1 className="text-[24px] font-medium leading-tight">
-          {title} <span className="text-mute">({results.length})</span>
-        </h1>
-        <div className="flex items-center gap-2">
+        <div className="min-w-0">
+          {crumbs.length > 0 && (
+            <nav aria-label="Breadcrumb" className="mb-1 flex flex-wrap gap-x-1 text-[14px] font-medium text-mute">
+              {crumbs.map((c, i) => (
+                <span key={c.href}>
+                  {i > 0 && <span aria-hidden>/ </span>}
+                  <Link href={c.href} className="hover:text-ink">{c.label}</Link>
+                </span>
+              ))}
+            </nav>
+          )}
+          <h1 className="text-[24px] font-medium leading-tight">
+            {title} <span className="text-mute">({results.length})</span>
+          </h1>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
           <button
             type="button"
             onClick={() => setShowFilters((s) => !s)}
@@ -76,7 +94,7 @@ export function ShopClient({
           <button
             type="button"
             onClick={() => setMobileOpen(true)}
-            className="flex h-10 items-center gap-2 rounded-pill border border-hairline px-4 text-[14px] font-medium lg:hidden"
+            className="flex h-10 shrink-0 items-center gap-2 whitespace-nowrap rounded-pill border border-hairline px-4 text-[14px] font-medium lg:hidden"
           >
             Filters{count > 0 && ` (${count})`}
           </button>
@@ -87,7 +105,7 @@ export function ShopClient({
               aria-haspopup="listbox"
               aria-expanded={sortOpen}
               onClick={() => setSortOpen((o) => !o)}
-              className="flex h-10 items-center gap-2 rounded-pill px-4 text-[14px] font-medium transition hover:bg-cloud lg:text-[16px]"
+              className="flex h-10 shrink-0 items-center gap-2 whitespace-nowrap rounded-pill px-4 text-[14px] font-medium transition hover:bg-cloud lg:text-[16px]"
             >
               Sort By
               <motion.svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden animate={{ rotate: sortOpen ? 180 : 0 }}>

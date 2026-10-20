@@ -39,8 +39,8 @@ export default async function HomePage() {
         <Reveal>
           <section className="grid gap-2 md:grid-cols-2">
             {[
-              { title: "Run", sub: "Road and trail, built light.", href: "/shop?category=footwear", photo: "Or4_-uT-S5c" },
-              { title: "Train", sub: "Layers that keep up.", href: "/shop?category=clothing", photo: "1eJ9cG97BD8" },
+              { title: "Run", sub: "Road and trail, built light.", href: "/footwear", photo: "Or4_-uT-S5c" },
+              { title: "Train", sub: "Layers that keep up.", href: "/clothing", photo: "1eJ9cG97BD8" },
             ].map((tile) => (
               <div key={tile.title} className="group relative isolate flex aspect-[4/3] items-end overflow-hidden bg-ink p-6 text-white lg:p-10">
                 <Image
@@ -70,7 +70,7 @@ export default async function HomePage() {
 
         {clothing.length > 0 && (
           <section>
-            <Reveal><SectionHeading href="/shop?category=clothing">Latest in Clothing</SectionHeading></Reveal>
+            <Reveal><SectionHeading href="/clothing">Latest in Clothing</SectionHeading></Reveal>
             <ProductRow products={clothing} columns={4} />
           </section>
         )}
