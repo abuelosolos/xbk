@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, type Variants } from "motion/react";
 import type { ReactNode } from "react";
 import { LogoMark } from "@/components/brand/Logo";
@@ -10,41 +11,49 @@ import { unsplash } from "@/lib/images";
 import { EASE } from "@/lib/motion";
 import { NAV } from "@/lib/nav";
 
-// rows slide in from the right, one after another, once the panel opens;
-// `start` lets the second group carry on where the first left off
+// once the panel has dropped, rows fade in from the right one after another;
+// `start` lets the bottom group carry on where the top group left off
 const STEP = 0.05;
-const list = (start: number): Variants => ({ show: { transition: { staggerChildren: STEP, delayChildren: 0.08 + start * STEP } } });
+const list = (start: number): Variants => ({ show: { transition: { staggerChildren: STEP, delayChildren: 0.22 + start * STEP } } });
 const row: Variants = {
-  hidden: { opacity: 0, x: 24 },
-  show: { opacity: 1, x: 0, transition: { duration: 0.35, ease: EASE } },
+  hidden: { opacity: 0, x: 20 },
+  show: { opacity: 1, x: 0, transition: { duration: 0.32, ease: EASE } },
 };
 
-function Row({ href, onClick, thumb, children }: { href: string; onClick: () => void; thumb: ReactNode; children: ReactNode }) {
-  return (
-    <motion.li variants={row}>
-      <Link
-        href={href}
-        onClick={onClick}
-        className="flex items-center gap-4 rounded-2xl px-2 py-1.5 text-[18px] font-medium transition hover:bg-white/10 active:scale-[0.98]"
-      >
-        <span className="relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white/10">{thumb}</span>
-        {children}
-      </Link>
-    </motion.li>
-  );
-}
+const rowClass = "flex w-full items-center gap-2.5 rounded-xl px-2 py-1.5 text-left font-medium transition hover:bg-cloud active:scale-[0.98]";
 
 const Icon = ({ d }: { d: string }) => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden className="shrink-0">
     <path d={d} />
   </svg>
 );
 
+/** Plain icon + label row for the account group at the bottom. */
+function UtilityRow({ icon, children, ...props }: { icon: string; children: ReactNode } & ({ href: string; onClick: () => void } | { href?: undefined; onClick: () => void })) {
+  const body = (
+    <>
+      <Icon d={icon} />
+      {children}
+    </>
+  );
+  return (
+    <motion.li variants={row}>
+      {props.href ? (
+        <Link href={props.href} onClick={props.onClick} className={`${rowClass} text-[13px]`}>{body}</Link>
+      ) : (
+        <button type="button" onClick={props.onClick} className={`${rowClass} text-[13px]`}>{body}</button>
+      )}
+    </motion.li>
+  );
+}
+
 /**
- * Mobile/tablet menu: a dark rounded dropdown under the nav bar (Chrome-menu style).
- * Rendered inside the sticky header, so it stays anchored to the bar.
+ * Mobile/tablet menu: a white half-width sheet that drops down from under the nav bar
+ * on the right and fills the rest of the screen height. Rendered inside the sticky
+ * header so it stays anchored to the bar; tapping the dimmed page closes it.
  */
 export function MobileMenu({ onClose }: { onClose: () => void }) {
+  const router = useRouter();
   const { data: session } = authClient.useSession();
   const role = (session?.user as { role?: string } | undefined)?.role;
 
@@ -53,54 +62,57 @@ export function MobileMenu({ onClose }: { onClose: () => void }) {
       id="mobile-menu"
       role="dialog"
       aria-label="Menu"
-      className="absolute right-3 top-[calc(100%+8px)] z-[70] max-h-[calc(100dvh-88px)] w-[min(360px,calc(100vw-24px))] origin-top-right overflow-y-auto rounded-[28px] bg-ink p-3 text-white lg:hidden"
-      initial={{ opacity: 0, scale: 0.94, y: -8 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.96, y: -6, transition: { duration: 0.18 } }}
-      transition={{ duration: 0.28, ease: EASE }}
+      className="absolute right-0 top-full z-[70] flex h-[calc(100dvh-64px)] w-1/2 md:h-[calc(100dvh-100px)] min-w-[200px] max-w-sm flex-col overflow-y-auto rounded-bl-[24px] border-b border-l border-hairline-soft bg-white p-3 text-ink lg:hidden"
+      initial={{ clipPath: "inset(0 0 100% 0)" }}
+      animate={{ clipPath: "inset(0 0 0% 0)" }}
+      exit={{ clipPath: "inset(0 0 100% 0)", transition: { duration: 0.22, ease: EASE } }}
+      transition={{ duration: 0.35, ease: EASE }}
     >
-      <div className="flex items-center justify-between px-2 pb-2 pt-1">
-        <LogoMark className="w-7" />
-        <button
-          type="button"
-          aria-label="Close menu"
-          onClick={onClose}
-          className="flex size-10 items-center justify-center rounded-full bg-white/10 transition hover:bg-white/20 active:scale-90"
-        >
-          <Icon d="M6 6l12 12M18 6 6 18" />
-        </button>
-      </div>
+      <LogoMark className="mx-2 mb-3 mt-1 w-6 shrink-0" />
 
       <motion.ul variants={list(0)} initial="hidden" animate="show" className="space-y-1">
         {NAV.map((item) => (
-          <Row
-            key={item.key}
-            href={item.href}
-            onClick={onClose}
-            thumb={<Image src={unsplash(item.photo, 160)} alt="" fill sizes="48px" className="object-cover" />}
-          >
-            {item.label}
-          </Row>
+          <motion.li key={item.key} variants={row}>
+            <Link href={item.href} onClick={onClose} className={`${rowClass} text-[14px]`}>
+              <span className="relative size-8 shrink-0 overflow-hidden rounded-lg bg-cloud">
+                <Image src={unsplash(item.photo, 120)} alt="" fill sizes="32px" className="object-cover" />
+              </span>
+              <span className="min-w-0 truncate">{item.label}</span>
+            </Link>
+          </motion.li>
         ))}
       </motion.ul>
 
-      <motion.ul variants={list(NAV.length)} initial="hidden" animate="show" className="mt-4 space-y-1">
-        <Row href="/account" onClick={onClose} thumb={<Icon d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0" />}>
+      {/* account group sits at the bottom of the sheet */}
+      <motion.ul variants={list(NAV.length)} initial="hidden" animate="show" className="mt-auto space-y-0.5 pt-6">
+        <UtilityRow href="/account" onClick={onClose} icon="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0">
           {session ? `Hi, ${session.user.name.split(" ")[0]}` : "Account"}
-        </Row>
-        {!session && (
-          <Row href="/sign-in" onClick={onClose} thumb={<Icon d="M10 17l5-5-5-5M15 12H3M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4" />}>
-            Sign In
-          </Row>
-        )}
-        {role === "admin" && (
-          <Row href="/admin" onClick={onClose} thumb={<Icon d="M4 6h16M4 12h16M4 18h10" />}>
-            Admin
-          </Row>
-        )}
-        <Row href="/cart" onClick={onClose} thumb={<Icon d="M5 8h14l-1 12H6L5 8Zm4 0V6a3 3 0 0 1 6 0v2" />}>
+        </UtilityRow>
+        <UtilityRow href="/cart" onClick={onClose} icon="M5 8h14l-1 12H6L5 8Zm4 0V6a3 3 0 0 1 6 0v2">
           Bag
-        </Row>
+        </UtilityRow>
+        {role === "admin" && (
+          <UtilityRow href="/admin" onClick={onClose} icon="M4 6h16M4 12h16M4 18h10">
+            Admin
+          </UtilityRow>
+        )}
+        {session ? (
+          <UtilityRow
+            icon="M14 17l5-5-5-5M19 12H8M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"
+            onClick={async () => {
+              onClose();
+              await authClient.signOut();
+              router.push("/");
+              router.refresh();
+            }}
+          >
+            Log Out
+          </UtilityRow>
+        ) : (
+          <UtilityRow href="/sign-in" onClick={onClose} icon="M10 17l5-5-5-5M15 12H3M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4">
+            Sign In
+          </UtilityRow>
+        )}
       </motion.ul>
     </motion.div>
   );
