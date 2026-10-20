@@ -1,3 +1,4 @@
+import { matchesType } from "./collections";
 import type { Gender, Product } from "./types";
 
 export type PriceBucket = "all" | "u30" | "30-60" | "60-100" | "o100";
@@ -15,6 +16,8 @@ export interface Filters {
   q: string;
   genders: Gender[];
   categories: string[];
+  /** sub-category slugs from lib/collections PRODUCT_TYPES */
+  types: string[];
   sizes: string[];
   colors: string[];
   price: PriceBucket;
@@ -25,6 +28,7 @@ export const EMPTY_FILTERS: Filters = {
   q: "",
   genders: [],
   categories: [],
+  types: [],
   sizes: [],
   colors: [],
   price: "all",
@@ -41,6 +45,7 @@ export function applyFilters(products: Product[], f: Filters, sort: SortKey): Pr
     // "men"/"women" listings also include unisex pieces
     if (f.genders.length && !f.genders.includes(p.gender) && p.gender !== "unisex") return false;
     if (f.categories.length && !f.categories.includes(p.category)) return false;
+    if (f.types.length && !f.types.some((t) => matchesType(p, t))) return false;
     if (f.sizes.length && !f.sizes.some((s) => p.sizes.includes(s))) return false;
     if (f.colors.length && !f.colors.some((c) => p.colors.some((pc) => pc.name === c))) return false;
     if (f.saleOnly && p.salePriceKobo === null) return false;
@@ -58,6 +63,7 @@ export function applyFilters(products: Product[], f: Filters, sort: SortKey): Pr
 export const activeFilterCount = (f: Filters) =>
   f.genders.length +
   f.categories.length +
+  f.types.length +
   f.sizes.length +
   f.colors.length +
   (f.price !== "all" ? 1 : 0) +

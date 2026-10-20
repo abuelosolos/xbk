@@ -7,17 +7,17 @@ import { unsplash } from "@/lib/images";
 import { EASE } from "@/lib/motion";
 
 const TILES = [
-  { label: "Footwear", href: "/shop?category=footwear", photo: "0Mfukiqo4Us" },
-  { label: "Clothing", href: "/shop?category=clothing", photo: "9CjMWUGBfr8" },
-  { label: "Accessories", href: "/shop?category=accessories", photo: "d-BTL93LsGg" },
-  { label: "Kids", href: "/shop?gender=kids", photo: "vspPIvHpNO4" },
-  { label: "Sale", href: "/shop?sale=1", photo: "B0s90BDX9xc" },
+  { label: "Footwear", href: "/footwear", photo: "0Mfukiqo4Us" },
+  { label: "Clothing", href: "/clothing", photo: "9CjMWUGBfr8" },
+  { label: "Accessories", href: "/accessories", photo: "d-BTL93LsGg" },
+  { label: "Kids", href: "/kids", photo: "vspPIvHpNO4" },
+  { label: "Sale", href: "/sale", photo: "B0s90BDX9xc" },
 ];
 
 /** Horizontal snap rail of 4:5 portrait tiles with a white pill anchored bottom-left. */
 export function CategoryRail() {
   return (
-    <ul className="scrollbar-none -mx-4 flex snap-x snap-mandatory gap-2 overflow-x-auto px-4 lg:mx-0 lg:px-0">
+    <ul className="scrollbar-none -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-2 overflow-x-auto px-4 lg:mx-0 lg:scroll-px-0 lg:px-0">
       {TILES.map((t, i) => (
         <motion.li
           key={t.label}

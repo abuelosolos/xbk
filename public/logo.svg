@@ -1,10 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 64" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 84" fill="none">
   <defs>
-    <linearGradient id="fade" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="64">
+    <linearGradient id="fade" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="84">
       <stop offset="0" stop-color="#111111" stop-opacity="0.2"/>
       <stop offset="0.3" stop-color="#111111" stop-opacity="1"/>
       <stop offset="1" stop-color="#111111" stop-opacity="1"/>
     </linearGradient>
   </defs>
-  <polygon points="50,5 5,59 95,59" fill="url(#fade)" stroke="url(#fade)" stroke-width="9" stroke-linejoin="round"/>
+  <path d="M54.27 2.40 L99.27 76.40 A5 5 0 0 1 95 84 L5 84 A5 5 0 0 1 0.73 76.40 L45.73 2.40 A5 5 0 0 1 54.27 2.40 Z" fill="url(#fade)"/>
 </svg>
