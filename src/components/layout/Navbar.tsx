@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { LogoMark } from "@/components/brand/Logo";
+import { MobileMenu } from "@/components/layout/MobileMenu";
 import { authClient } from "@/lib/auth-client";
 import { EASE } from "@/lib/motion";
 import { NAV } from "@/lib/nav";
@@ -49,7 +50,17 @@ export function Navbar() {
   const count = useCart(cartCount);
   const openCart = useUI((s) => s.openCart);
 
+  const pathname = usePathname();
+
   useEffect(() => setMounted(true), []);
+  // close the mobile menu on navigation and on Escape
+  useEffect(() => setMobileOpen(false), [pathname]);
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMobileOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [mobileOpen]);
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
     return () => {
@@ -81,6 +92,20 @@ export function Navbar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* dims the page (not the bar) while the mobile menu is open */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            key="m-backdrop"
+            className="fixed inset-0 z-40 bg-black/30 lg:hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setMobileOpen(false)}
           />
         )}
       </AnimatePresence>
@@ -167,9 +192,10 @@ export function Navbar() {
             <button
               type="button"
               className="flex size-10 items-center justify-center rounded-full transition hover:bg-cloud lg:hidden"
-              aria-label="Open menu"
+              aria-label={mobileOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileOpen}
-              onClick={() => setMobileOpen(true)}
+              aria-controls="mobile-menu"
+              onClick={() => setMobileOpen((o) => !o)}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
                 <path d="M3 7h18M3 12h18M3 17h18" />
@@ -222,56 +248,9 @@ export function Navbar() {
             </motion.div>
           )}
         </AnimatePresence>
+        <AnimatePresence>{mobileOpen && <MobileMenu onClose={() => setMobileOpen(false)} />}</AnimatePresence>
       </header>
 
-      {/* mobile drawer */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <>
-            <motion.div
-              key="m-backdrop"
-              className="fixed inset-0 z-[60] bg-black/40 lg:hidden"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setMobileOpen(false)}
-            />
-            <motion.aside
-              key="m-drawer"
-              className="fixed inset-y-0 left-0 z-[70] w-[88%] max-w-sm overflow-y-auto bg-white px-6 py-5 lg:hidden"
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ duration: 0.35, ease: EASE }}
-            >
-              <div className="mb-8 flex items-center justify-between">
-                <LogoMark className="w-10" />
-                <button type="button" aria-label="Close menu" className="flex size-10 items-center justify-center rounded-full bg-cloud" onClick={() => setMobileOpen(false)}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M6 6l12 12M18 6 6 18" /></svg>
-                </button>
-              </div>
-              <ul>
-                {NAV.map((item, i) => (
-                  <motion.li
-                    key={item.key}
-                    initial={{ opacity: 0, x: -16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.08 + i * 0.05, duration: 0.3, ease: EASE }}
-                  >
-                    <Link href={item.href} onClick={() => setMobileOpen(false)} className="block border-b border-hairline-soft py-5 text-[24px] font-medium leading-tight">
-                      {item.label}
-                    </Link>
-                  </motion.li>
-                ))}
-              </ul>
-              <div className="mt-8 flex flex-col gap-3 text-[16px] font-medium">
-                <Link href="/account" onClick={() => setMobileOpen(false)}>Account</Link>
-                <Link href="/sign-in" onClick={() => setMobileOpen(false)}>Sign In</Link>
-              </div>
-            </motion.aside>
-          </>
-        )}
-      </AnimatePresence>
     </>
   );
 }
