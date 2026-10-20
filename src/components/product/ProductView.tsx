@@ -1,35 +1,15 @@
 "use client";
 
 import { AnimatePresence, motion, useAnimationControls } from "motion/react";
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FramedImage } from "@/components/product/FramedImage";
 import { Button } from "@/components/ui/Button";
+import { Disclosure } from "@/components/ui/Disclosure";
 import { EASE } from "@/lib/motion";
 import type { Product } from "@/lib/types";
 import { cn, formatNaira } from "@/lib/utils";
 import { useCart } from "@/store/cart";
 import { useUI } from "@/store/ui";
-
-function Disclosure({ title, children }: { title: string; children: ReactNode }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="border-b border-hairline">
-      <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)} className="flex w-full items-center justify-between py-6 text-left text-[16px] font-medium">
-        {title}
-        <motion.svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.25, ease: EASE }}>
-          <path d="m6 9 6 6 6-6" />
-        </motion.svg>
-      </button>
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease: EASE }} className="overflow-hidden">
-            <div className="pb-6 text-[16px] leading-relaxed text-charcoal">{children}</div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
 
 export function ProductView({ product }: { product: Product }) {
   const add = useCart((s) => s.add);
@@ -41,6 +21,25 @@ export function ProductView({ product }: { product: Product }) {
   const [view, setView] = useState(0);
   const [added, setAdded] = useState(false);
   const [error, setError] = useState(false);
+  const [showBar, setShowBar] = useState(false);
+  const sizeRef = useRef<HTMLDivElement>(null);
+  const ctaRef = useRef<HTMLDivElement>(null);
+
+  // Mobile sticky bar: shown while the main Add to Bag button is off screen,
+  // hidden again once the footer scrolls in so it never covers footer links.
+  useEffect(() => {
+    const cta = ctaRef.current;
+    const footer = document.querySelector("footer");
+    if (!cta) return;
+    const visible = new Map<Element, boolean>();
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) visible.set(e.target, e.isIntersecting);
+      setShowBar(!visible.get(cta) && !(footer && visible.get(footer)));
+    });
+    io.observe(cta);
+    if (footer) io.observe(footer);
+    return () => io.disconnect();
+  }, []);
 
   const views = product.images.length ? product.images : [null, null, null, null];
   const color = product.colors[colorIdx];
@@ -51,6 +50,7 @@ export function ProductView({ product }: { product: Product }) {
   function addToBag() {
     if (!size) {
       setError(true);
+      sizeRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       shake.start({ x: [0, -8, 8, -5, 5, 0], transition: { duration: 0.4 } });
       return;
     }
@@ -138,7 +138,7 @@ export function ProductView({ product }: { product: Product }) {
           </div>
         )}
 
-        <motion.div animate={shake} className="mt-8">
+        <motion.div ref={sizeRef} animate={shake} className="mt-8 scroll-mt-24">
           <div className="mb-3 flex items-center justify-between">
             <p className={cn("text-[16px] font-medium", error && "text-sale")}>{error ? "Please select a size" : "Select Size"}</p>
           </div>
@@ -160,7 +160,7 @@ export function ProductView({ product }: { product: Product }) {
           </div>
         </motion.div>
 
-        <div className="mt-6 flex flex-col gap-3">
+        <div ref={ctaRef} className="mt-6 flex flex-col gap-3">
           <Button size="lg" disabled={soldOut} onClick={addToBag} className="w-full">
             <AnimatePresence mode="wait" initial={false}>
               <motion.span key={added ? "added" : "add"} initial={{ y: 12, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -12, opacity: 0 }} transition={{ duration: 0.18 }}>
@@ -176,6 +176,22 @@ export function ProductView({ product }: { product: Product }) {
           <Disclosure title="Reviews (0)"><p>No reviews yet.</p></Disclosure>
         </div>
       </div>
+
+      <AnimatePresence>
+        {showBar && (
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ duration: 0.3, ease: EASE }}
+            className="fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-white px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] lg:hidden"
+          >
+            <Button size="lg" disabled={soldOut} onClick={addToBag} className="w-full">
+              {soldOut ? "Sold Out" : added ? "Added to Bag ✓" : size ? `Add to Bag · ${size}` : "Add to Bag"}
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
