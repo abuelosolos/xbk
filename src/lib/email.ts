@@ -46,3 +46,59 @@ export async function sendOrderEmails(o: OrderEmail) {
     else if (r.value.error) console.error("Order email failed", r.value.error);
   }
 }
+
+/** Emails in `ADMIN_EMAILS` (comma-separated, lower-cased). */
+export function adminEmails() {
+  return (process.env.ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+export const isAdminEmail = (email: string) => adminEmails().includes(email.toLowerCase());
+
+/** Verification / password-reset mail. Never throws; skipped with a warning when Resend is unset. */
+export async function sendAuthEmail(opts: { to: string; subject: string; heading: string; cta: string; url: string }) {
+  const key = process.env.RESEND_API_KEY;
+  const from = process.env.EMAIL_FROM;
+  if (!key || !from) {
+    console.warn(`RESEND_API_KEY / EMAIL_FROM not set; skipping "${opts.subject}" email`);
+    return;
+  }
+  const html = `<div style="font-family:Arial,sans-serif;max-width:520px;color:#111">
+<h2>${esc(opts.heading)}</h2>
+<p><a href="${esc(opts.url)}" style="display:inline-block;padding:12px 24px;border-radius:30px;background:#111;color:#fff;text-decoration:none">${esc(opts.cta)}</a></p>
+<p style="color:#707072;font-size:13px">If you didn't request this, you can ignore this email.</p></div>`;
+  try {
+    const r = await new Resend(key).emails.send({ from, to: opts.to, subject: opts.subject, html });
+    if (r.error) console.error("Auth email failed", r.error);
+  } catch (e) {
+    console.error("Auth email failed", e);
+  }
+}
+
+/** Branded plain-text message (paragraphs split on blank lines). Never throws; returns whether it was handed to Resend. */
+export async function sendCustomerEmail(opts: { to: string | string[]; subject: string; text: string; footerHtml?: string }) {
+  const key = process.env.RESEND_API_KEY;
+  const from = process.env.EMAIL_FROM;
+  if (!key || !from) {
+    console.warn(`RESEND_API_KEY / EMAIL_FROM not set; skipping "${opts.subject}" email`);
+    return false;
+  }
+  const paragraphs = opts.text
+    .split(/\n{2,}/)
+    .map((p) => `<p>${esc(p.trim()).replace(/\n/g, "<br>")}</p>`)
+    .join("");
+  const html = `<div style="font-family:Arial,sans-serif;max-width:520px;color:#111;line-height:1.5">${paragraphs}${opts.footerHtml ?? ""}</div>`;
+  try {
+    const r = await new Resend(key).emails.send({ from, to: opts.to, subject: opts.subject, html });
+    if (r.error) {
+      console.error("Email failed", r.error);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    console.error("Email failed", e);
+    return false;
+  }
+}

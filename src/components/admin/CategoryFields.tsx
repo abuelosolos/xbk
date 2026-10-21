@@ -4,8 +4,18 @@ import { useState } from "react";
 import type { Category } from "@/lib/types";
 
 /** Category + sub-category pickers; the sub-category list follows the chosen category. */
-export function CategoryFields({ categories, className }: { categories: Category[]; className: string }) {
-  const [slug, setSlug] = useState(categories[0]?.slug ?? "");
+export function CategoryFields({
+  categories,
+  className,
+  defaultCategory,
+  defaultSubcategory = "",
+}: {
+  categories: Category[];
+  className: string;
+  defaultCategory?: string;
+  defaultSubcategory?: string;
+}) {
+  const [slug, setSlug] = useState(defaultCategory ?? categories[0]?.slug ?? "");
   const subs = categories.find((c) => c.slug === slug)?.subcategories ?? [];
 
   return (
@@ -16,7 +26,7 @@ export function CategoryFields({ categories, className }: { categories: Category
         ))}
       </select>
       {/* keyed on the category so a stale sub-category is never submitted with a different category */}
-      <select key={slug} name="subcategory" defaultValue="" className={className} aria-label="Sub-category">
+      <select key={slug} name="subcategory" defaultValue={slug === defaultCategory ? defaultSubcategory : ""} className={className} aria-label="Sub-category">
         <option value="">No sub-category</option>
         {subs.map((s) => (
           <option key={s.slug} value={s.slug}>{s.name}</option>

@@ -10,3 +10,10 @@ export function LogoMark({ className }: { className?: string }) {
     </svg>
   );
 }
+
+/** Store logo: the artwork in `public/XBKLogo.svg` (black triangle, white XBK lettering). */
+export function Logo({ className }: { className?: string }) {
+  // plain <img>: next/image won't optimise SVG, and the file is already the final artwork
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src="/XBKLogo.svg" alt="XBK" width={1254} height={1254} className={cn("h-auto", className)} />;
+}

@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/lib/session";
 import { sql } from "drizzle-orm";
 import { getDb, hasDb } from "@/db";
 import { orders, products } from "@/db/schema";
@@ -6,6 +7,7 @@ import { formatNaira } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {
+  await requireAdmin("/admin");
   let stats = { revenue: 0, orders: 0, paid: 0, products: 0 };
 
   if (hasDb()) {
@@ -13,8 +15,8 @@ export default async function AdminDashboard() {
     const [o] = await db
       .select({
         orders: sql<number>`count(*)::int`,
-        paid: sql<number>`count(*) filter (where ${orders.status} in ('paid','shipped'))::int`,
-        revenue: sql<number>`coalesce(sum(${orders.totalKobo}) filter (where ${orders.status} in ('paid','shipped')), 0)::float8`,
+        paid: sql<number>`count(*) filter (where ${orders.status} in ('paid','shipped','delivered'))::int`,
+        revenue: sql<number>`coalesce(sum(${orders.totalKobo}) filter (where ${orders.status} in ('paid','shipped','delivered')), 0)::float8`,
       })
       .from(orders);
     const [p] = await db.select({ n: sql<number>`count(*)::int` }).from(products);

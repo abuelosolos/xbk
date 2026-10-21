@@ -11,62 +11,79 @@ import {
   text,
   timestamp,
   unique,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 import type { Gender } from "@/lib/types";
 
 /* ───────────── Better Auth tables ───────────── */
 
-export const user = pgTable("user", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  email: text("email").notNull().unique(),
-  emailVerified: boolean("email_verified").notNull().default(false),
-  image: text("image"),
-  role: text("role").notNull().default("customer"), // "customer" | "admin"
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+export const user = pgTable(
+  "user",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    email: text("email").notNull().unique(),
+    emailVerified: boolean("email_verified").notNull().default(false),
+    image: text("image"),
+    role: text("role").notNull().default("customer"), // "customer" | "admin"
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (t) => [check("user_role_check", sql`${t.role} in ('customer', 'admin')`)],
+);
 
-export const session = pgTable("session", {
-  id: text("id").primaryKey(),
-  expiresAt: timestamp("expires_at").notNull(),
-  token: text("token").notNull().unique(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-  ipAddress: text("ip_address"),
-  userAgent: text("user_agent"),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-});
+export const session = pgTable(
+  "session",
+  {
+    id: text("id").primaryKey(),
+    expiresAt: timestamp("expires_at").notNull(),
+    token: text("token").notNull().unique(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    ipAddress: text("ip_address"),
+    userAgent: text("user_agent"),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+  },
+  (t) => [index("session_user_idx").on(t.userId)],
+);
 
-export const account = pgTable("account", {
-  id: text("id").primaryKey(),
-  accountId: text("account_id").notNull(),
-  providerId: text("provider_id").notNull(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  accessToken: text("access_token"),
-  refreshToken: text("refresh_token"),
-  idToken: text("id_token"),
-  accessTokenExpiresAt: timestamp("access_token_expires_at"),
-  refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
-  scope: text("scope"),
-  password: text("password"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+export const account = pgTable(
+  "account",
+  {
+    id: text("id").primaryKey(),
+    accountId: text("account_id").notNull(),
+    providerId: text("provider_id").notNull(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    accessToken: text("access_token"),
+    refreshToken: text("refresh_token"),
+    idToken: text("id_token"),
+    accessTokenExpiresAt: timestamp("access_token_expires_at"),
+    refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
+    scope: text("scope"),
+    password: text("password"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (t) => [index("account_user_idx").on(t.userId)],
+);
 
-export const verification = pgTable("verification", {
-  id: text("id").primaryKey(),
-  identifier: text("identifier").notNull(),
-  value: text("value").notNull(),
-  expiresAt: timestamp("expires_at").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
+export const verification = pgTable(
+  "verification",
+  {
+    id: text("id").primaryKey(),
+    identifier: text("identifier").notNull(),
+    value: text("value").notNull(),
+    expiresAt: timestamp("expires_at").notNull(),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (t) => [index("verification_identifier_idx").on(t.identifier)],
+);
 
 /* ───────────── Commerce tables (all money in kobo) ───────────── */
 
@@ -114,7 +131,10 @@ export const products = pgTable(
     gender: text("gender").$type<Gender>().notNull(),
     priceKobo: integer("price_kobo").notNull(),
     salePriceKobo: integer("sale_price_kobo"),
-    colors: jsonb("colors").$type<{ name: string; hex: string }[]>().notNull().default([]),
+    colors: jsonb("colors")
+      .$type<{ name: string; hex: string }[]>()
+      .notNull()
+      .default([]),
     sizes: jsonb("sizes").$type<string[]>().notNull().default([]),
     badge: text("badge"),
     description: text("description").notNull().default(""),
@@ -122,6 +142,8 @@ export const products = pgTable(
     stock: integer("stock").notNull().default(0),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    /** Set = hidden from the storefront and checkout; order history keeps working. */
+    archivedAt: timestamp("archived_at"),
   },
   (t) => [
     // (subcategory, category) must be a real pair; a null subcategory skips the check
@@ -131,7 +153,10 @@ export const products = pgTable(
       foreignColumns: [subcategories.id, subcategories.categoryId],
     }).onDelete("restrict"),
     check("products_price_positive", sql`${t.priceKobo} > 0`),
-    check("products_sale_below_price", sql`${t.salePriceKobo} is null or ${t.salePriceKobo} < ${t.priceKobo}`),
+    check(
+      "products_sale_below_price",
+      sql`${t.salePriceKobo} is null or ${t.salePriceKobo} < ${t.priceKobo}`,
+    ),
     check("products_stock_non_negative", sql`${t.stock} >= 0`),
     index("products_category_idx").on(t.categoryId),
     index("products_subcategory_idx").on(t.subcategoryId),
@@ -139,7 +164,13 @@ export const products = pgTable(
   ],
 );
 
-export const orderStatus = pgEnum("order_status", ["pending", "paid", "failed", "shipped"]);
+export const orderStatus = pgEnum("order_status", [
+  "pending",
+  "paid",
+  "failed",
+  "shipped",
+  "delivered",
+]);
 
 export type ShippingAddress = {
   fullName: string;
@@ -147,6 +178,7 @@ export type ShippingAddress = {
   address: string;
   city: string;
   state: string;
+  postalCode?: string;
 };
 
 export const orders = pgTable(
@@ -162,6 +194,10 @@ export const orders = pgTable(
     shipping: jsonb("shipping").$type<ShippingAddress>().notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     paidAt: timestamp("paid_at"),
+    shippedAt: timestamp("shipped_at"),
+    deliveredAt: timestamp("delivered_at"),
+    /** True when stock could not fully cover this order at payment time (oversold). */
+    stockShortfall: boolean("stock_shortfall").notNull().default(false),
   },
   (t) => [index("orders_user_idx").on(t.userId)],
 );
@@ -180,3 +216,91 @@ export const orderItems = pgTable("order_items", {
   qty: integer("qty").notNull(),
   unitPriceKobo: integer("unit_price_kobo").notNull(),
 });
+
+/** Saved delivery addresses; at most one default per user (partial unique index). */
+export const addresses = pgTable(
+  "addresses",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    fullName: text("full_name").notNull(),
+    phone: text("phone").notNull(),
+    address: text("address").notNull(),
+    city: text("city").notNull(),
+    state: text("state").notNull(),
+    postalCode: text("postal_code").notNull().default(""),
+    isDefault: boolean("is_default").notNull().default(false),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [
+    index("addresses_user_idx").on(t.userId),
+    uniqueIndex("addresses_one_default_idx")
+      .on(t.userId)
+      .where(sql`${t.isDefault}`),
+  ],
+);
+
+/** Delivery fee and window per state; edited by admins at /admin/shipping. Days are business days. */
+export const shippingRates = pgTable(
+  "shipping_rates",
+  {
+    state: text("state").primaryKey(),
+    feeKobo: integer("fee_kobo").notNull(),
+    minDays: integer("min_days").notNull(),
+    maxDays: integer("max_days").notNull(),
+    active: boolean("active").notNull().default(true),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (t) => [
+    check("shipping_rates_fee_positive", sql`${t.feeKobo} > 0`),
+    check(
+      "shipping_rates_days_valid",
+      sql`${t.minDays} >= 0 and ${t.minDays} <= ${t.maxDays}`,
+    ),
+  ],
+);
+
+/** Footer newsletter signups. `unsubscribedAt` is set instead of deleting the row. */
+export const newsletterSubscribers = pgTable("newsletter_subscribers", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  email: text("email").notNull().unique(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  unsubscribedAt: timestamp("unsubscribed_at"),
+});
+
+/** Admin-edited customer emails; built-in defaults (lib/email-templates.ts) apply when a row is missing. */
+export const emailTemplates = pgTable("email_templates", {
+  key: text("key").primaryKey(), // "order_shipped" | "order_delivered" | "newsletter_welcome"
+  subject: text("subject").notNull(),
+  body: text("body").notNull(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+/** Append-only record of every stock change; `products.stock` stays the source of truth. */
+export const stockMovements = pgTable(
+  "stock_movements",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    delta: integer("delta").notNull(),
+    /** Units a sale could not fill because stock ran out. */
+    shortfall: integer("shortfall").notNull().default(0),
+    stockAfter: integer("stock_after").notNull(),
+    reason: text("reason").notNull(),
+    orderId: uuid("order_id").references(() => orders.id, { onDelete: "set null" }),
+    actorUserId: text("actor_user_id").references(() => user.id, { onDelete: "set null" }),
+    note: text("note"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [
+    index("stock_movements_product_idx").on(t.productId, t.createdAt.desc()),
+    check("stock_movements_reason_check", sql`${t.reason} in ('initial','sale','restock','correction','damaged','return')`),
+    check("stock_movements_stock_after_check", sql`${t.stockAfter} >= 0`),
+    check("stock_movements_shortfall_check", sql`${t.shortfall} >= 0`),
+    check("stock_movements_note_len", sql`${t.note} is null or char_length(${t.note}) <= 200`),
+  ],
+);
