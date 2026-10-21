@@ -50,7 +50,7 @@ export function HubTiles({ section }: { section: HubSection }) {
                   <h3 className="text-fs-24 font-medium leading-tight">{t.label}</h3>
                   <p className="mt-1 text-fs-16 text-mute">{styles(t.count)}</p>
                 </div>
-                <span className="inline-flex h-10 shrink-0 items-center rounded-pill bg-ink px-6 text-fs-16 font-medium text-white transition group-hover:bg-charcoal group-active:scale-95">
+                <span className="inline-flex h-10 shrink-0 items-center raised-dark rounded-pill bg-ink px-6 text-fs-16 font-medium text-white transition group-hover:bg-charcoal group-active:scale-95">
                   Shop
                 </span>
               </div>

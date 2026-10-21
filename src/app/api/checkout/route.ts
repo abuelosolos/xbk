@@ -4,6 +4,7 @@ import { z } from "zod";
 import { getDb, hasDb } from "@/db";
 import { orderItems, orders } from "@/db/schema";
 import { initializeTransaction } from "@/lib/paystack";
+import { shippingFeeKobo } from "@/lib/shipping";
 import { getProductsByIds } from "@/lib/products";
 import { getSession } from "@/lib/session";
 
@@ -52,13 +53,14 @@ export async function POST(request: Request) {
     lines.push({ product, ...item, unitPriceKobo: product.salePriceKobo ?? product.priceKobo });
   }
 
-  const totalKobo = lines.reduce((sum, l) => sum + l.unitPriceKobo * l.qty, 0);
+  const feeKobo = shippingFeeKobo(shipping.state);
+  const totalKobo = lines.reduce((sum, l) => sum + l.unitPriceKobo * l.qty, 0) + feeKobo;
   const reference = `xbk_${randomUUID().replaceAll("-", "")}`;
   const db = getDb();
 
   const [order] = await db
     .insert(orders)
-    .values({ userId: session.user.id, email: session.user.email, totalKobo, reference, shipping })
+    .values({ userId: session.user.id, email: session.user.email, totalKobo, shippingFeeKobo: feeKobo, reference, shipping })
     .returning({ id: orders.id });
 
   await db.insert(orderItems).values(

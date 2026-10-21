@@ -11,7 +11,7 @@ import { getAllProducts } from "@/lib/products";
 function SectionHeading({ children, href }: { children: React.ReactNode; href?: string }) {
   return (
     <div className="mb-6 flex items-end justify-between">
-      <h2 className="text-fs-32 font-medium uppercase leading-tight">{children}</h2>
+      <h2 className="text-fs-24 font-medium leading-tight">{children}</h2>
       {href && (
         <Link href={href} className="text-fs-16 font-medium underline underline-offset-4">
           Shop All
@@ -43,7 +43,7 @@ export default async function HomePage() {
                   alt=""
                   fill
                   sizes="(min-width:768px) 50vw, 100vw"
-                  className="-z-10 object-cover grayscale transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+                  className="-z-10 object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
                 />
                 <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-ink/80 via-ink/20 to-transparent" />
                 <div>

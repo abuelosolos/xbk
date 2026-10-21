@@ -1,5 +1,8 @@
+import { sql } from "drizzle-orm";
 import {
   boolean,
+  check,
+  foreignKey,
   index,
   integer,
   jsonb,
@@ -7,6 +10,7 @@ import {
   pgTable,
   text,
   timestamp,
+  unique,
   uuid,
 } from "drizzle-orm/pg-core";
 import type { Gender } from "@/lib/types";
@@ -66,6 +70,36 @@ export const verification = pgTable("verification", {
 
 /* ───────────── Commerce tables (all money in kobo) ───────────── */
 
+/** Top-level shelves: Shoes, Clothing, Accessories. */
+export const categories = pgTable("categories", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  slug: text("slug").notNull().unique(),
+  name: text("name").notNull(),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+/** Running, Lifestyle, Tops, Bags… always inside exactly one category. */
+export const subcategories = pgTable(
+  "subcategories",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    categoryId: uuid("category_id")
+      .notNull()
+      .references(() => categories.id, { onDelete: "restrict" }),
+    slug: text("slug").notNull(),
+    name: text("name").notNull(),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [
+    // the same slug may exist under different categories ("lifestyle" in Shoes and Clothing)
+    unique("subcategories_category_slug_unique").on(t.categoryId, t.slug),
+    // lets products reference (id, category_id) so a product can't sit in another category's subcategory
+    unique("subcategories_id_category_unique").on(t.id, t.categoryId),
+  ],
+);
+
 export const products = pgTable(
   "products",
   {
@@ -73,8 +107,10 @@ export const products = pgTable(
     slug: text("slug").notNull().unique(),
     name: text("name").notNull(),
     subtitle: text("subtitle").notNull(),
-    category: text("category").notNull(),
-    subcategory: text("subcategory"),
+    categoryId: uuid("category_id")
+      .notNull()
+      .references(() => categories.id, { onDelete: "restrict" }),
+    subcategoryId: uuid("subcategory_id"),
     gender: text("gender").$type<Gender>().notNull(),
     priceKobo: integer("price_kobo").notNull(),
     salePriceKobo: integer("sale_price_kobo"),
@@ -85,8 +121,22 @@ export const products = pgTable(
     images: jsonb("images").$type<string[]>().notNull().default([]),
     stock: integer("stock").notNull().default(0),
     createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
-  (t) => [index("products_category_idx").on(t.category), index("products_subcategory_idx").on(t.subcategory), index("products_gender_idx").on(t.gender)],
+  (t) => [
+    // (subcategory, category) must be a real pair; a null subcategory skips the check
+    foreignKey({
+      name: "products_subcategory_category_fk",
+      columns: [t.subcategoryId, t.categoryId],
+      foreignColumns: [subcategories.id, subcategories.categoryId],
+    }).onDelete("restrict"),
+    check("products_price_positive", sql`${t.priceKobo} > 0`),
+    check("products_sale_below_price", sql`${t.salePriceKobo} is null or ${t.salePriceKobo} < ${t.priceKobo}`),
+    check("products_stock_non_negative", sql`${t.stock} >= 0`),
+    index("products_category_idx").on(t.categoryId),
+    index("products_subcategory_idx").on(t.subcategoryId),
+    index("products_gender_idx").on(t.gender),
+  ],
 );
 
 export const orderStatus = pgEnum("order_status", ["pending", "paid", "failed", "shipped"]);
@@ -106,7 +156,8 @@ export const orders = pgTable(
     userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
     email: text("email").notNull(),
     status: orderStatus("status").notNull().default("pending"),
-    totalKobo: integer("total_kobo").notNull(),
+    totalKobo: integer("total_kobo").notNull(), // goods + shipping fee
+    shippingFeeKobo: integer("shipping_fee_kobo").notNull().default(0),
     reference: text("reference").notNull().unique(), // Paystack reference
     shipping: jsonb("shipping").$type<ShippingAddress>().notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),

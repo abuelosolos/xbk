@@ -1,6 +1,7 @@
 import { and, eq, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { orderItems, orders, products } from "@/db/schema";
+import { sendOrderEmails } from "./email";
 import { verifyTransaction } from "./paystack";
 
 export type SettleResult =
@@ -38,6 +39,7 @@ export async function settleOrderByReference(reference: string): Promise<SettleR
           .set({ stock: sql`greatest(${products.stock} - ${item.qty}, 0)` })
           .where(eq(products.id, item.productId));
       }
+      await sendOrderEmails({ ...order, items });
     }
     return { ok: true, orderId: order.id };
   }

@@ -4,10 +4,23 @@ import Link from "next/link";
 import { motion } from "motion/react";
 import { FramedImage } from "@/components/product/FramedImage";
 import { EASE } from "@/lib/motion";
+import { MOCK_PRODUCTS } from "@/db/mock-products";
 import type { Product } from "@/lib/types";
 import { formatNaira } from "@/lib/utils";
 
-export function ProductCard({ product, index = 0 }: { product: Product; index?: number }) {
+// TEMP: every card shows the Vector Trainer (image, copy, price) while real photos are pending; links keep the real slug.
+const PLACEHOLDER = MOCK_PRODUCTS.find((p) => p.slug === "vector-trainer")!;
+
+export function ProductCard({
+  product: real,
+  index = 0,
+  showPrice = false,
+}: {
+  product: Product;
+  index?: number;
+  showPrice?: boolean;
+}) {
+  const product = { ...PLACEHOLDER, id: real.id, slug: real.slug };
   const onSale = product.salePriceKobo !== null;
   const percentOff = onSale
     ? Math.round(((product.priceKobo - product.salePriceKobo!) / product.priceKobo) * 100)
@@ -25,11 +38,11 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
     >
       <Link href={`/product/${product.slug}`} className="block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink">
         {/* overflow-hidden keeps the hidden size strip inside the image instead of covering the text below */}
-        <div className="relative overflow-hidden rounded-[12px]">
-          <FramedImage src={product.images[0]} label={product.name} className="aspect-square" />
+        <div className="relative overflow-hidden">
+          <FramedImage src={product.images[0]} label={product.name} className="aspect-[4/5]" />
 
           {product.badge && (
-            <span className="absolute left-5 top-5 z-20 rounded-pill border border-hairline bg-white px-3 py-1 text-fs-12 font-medium">
+            <span className="absolute left-4 top-4 z-20 rounded-pill border border-hairline bg-white px-3 py-1 text-fs-12 font-medium">
               {product.badge}
             </span>
           )}
@@ -42,9 +55,24 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
           </div>
         </div>
 
-        <div className="mt-3 min-w-0 space-y-0.5">
+        <div className="min-w-0 space-y-0.5 px-4 pb-6 pt-4">
+          <h3 className="truncate text-fs-16 font-medium leading-snug">{product.name}</h3>
+          <p className="truncate text-fs-14 text-mute">{product.subtitle}</p>
+          {showPrice && (
+            <p className="flex flex-wrap items-baseline gap-x-2 pt-1 text-fs-14 font-medium">
+              {onSale ? (
+                <>
+                  <span className="text-sale">{formatNaira(product.salePriceKobo!)}</span>
+                  <span className="text-mute line-through">{formatNaira(product.priceKobo)}</span>
+                  <span className="text-sale">{percentOff}% off</span>
+                </>
+              ) : (
+                formatNaira(product.priceKobo)
+              )}
+            </p>
+          )}
           {product.colors.length > 1 && (
-            <ul className="mb-2 flex items-center gap-1.5" aria-label="Available colours">
+            <ul className="flex pt-3 items-center gap-2" aria-label="Available colours">
               {product.colors.slice(0, 5).map((c) => (
                 <li
                   key={c.name}
@@ -55,19 +83,6 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
               ))}
             </ul>
           )}
-          <h3 className="truncate text-fs-16 font-medium leading-snug">{product.name}</h3>
-          <p className="truncate text-fs-14 font-medium text-mute">{product.subtitle}</p>
-          <p className="flex flex-wrap items-baseline gap-x-2 pt-1.5 text-fs-16 font-medium">
-            {onSale ? (
-              <>
-                <span className="text-sale">{formatNaira(product.salePriceKobo!)}</span>
-                <span className="text-mute line-through">{formatNaira(product.priceKobo)}</span>
-                <span className="text-sale">{percentOff}% off</span>
-              </>
-            ) : (
-              formatNaira(product.priceKobo)
-            )}
-          </p>
         </div>
       </Link>
     </motion.article>

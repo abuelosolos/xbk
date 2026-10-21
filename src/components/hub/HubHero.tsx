@@ -6,7 +6,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { unsplash } from "@/lib/images";
 import { EASE } from "@/lib/motion";
 
-/** Hub campaign banner: grayscale photo, ink gradient, 96px headline lockup and Shop All pill. */
+/** Hub campaign banner: photo, ink gradient, 96px headline lockup and Shop All pill. */
 export function HubHero({ title, blurb, photo, href }: { title: string; blurb: string; photo: string; href: string }) {
   return (
     <section className="relative isolate flex h-[min(64vh,600px)] min-h-[420px] items-end overflow-hidden bg-ink text-white">
@@ -17,7 +17,7 @@ export function HubHero({ title, blurb, photo, href }: { title: string; blurb: s
         animate={{ scale: 1 }}
         transition={{ duration: 1.6, ease: EASE }}
       >
-        <Image src={unsplash(photo, 2000)} alt="" fill priority sizes="100vw" className="object-cover grayscale" />
+        <Image src={unsplash(photo, 2000)} alt="" fill priority sizes="100vw" className="object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/30 to-ink/10" />
       </motion.div>
 

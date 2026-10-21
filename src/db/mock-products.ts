@@ -113,3 +113,4 @@ export const MOCK_PRODUCTS: Product[] = seeds.map(({ photos, ...s }) => ({
   badge: s.badge ?? null,
   ...s,
 }));
+export { CATEGORIES as MOCK_CATEGORIES } from "./catalog-data";

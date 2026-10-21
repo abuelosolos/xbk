@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button, ButtonLink } from "@/components/ui/Button";
+import { shippingFeeKobo } from "@/lib/shipping";
 import { formatNaira } from "@/lib/utils";
 import { cartCount, cartSubtotal, useCart } from "@/store/cart";
 
@@ -15,8 +16,10 @@ export function CheckoutForm({ email, name }: { email: string; name: string }) {
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [state, setState] = useState("");
 
   useEffect(() => setMounted(true), []);
+  const fee = shippingFeeKobo(state);
   if (!mounted) return <div className="min-h-[60vh]" />;
 
   if (count === 0) {
@@ -66,7 +69,7 @@ export function CheckoutForm({ email, name }: { email: string; name: string }) {
         <input name="address" required placeholder="Street address" autoComplete="street-address" className={field} />
         <div className="grid grid-cols-2 gap-4">
           <input name="city" required placeholder="City" autoComplete="address-level2" className={field} />
-          <input name="state" required placeholder="State" autoComplete="address-level1" className={field} />
+          <input name="state" required value={state} onChange={(e) => setState(e.target.value)} placeholder="State" autoComplete="address-level1" className={field} />
         </div>
         {error && <p role="alert" className="text-fs-14 font-medium text-sale">{error}</p>}
         <Button type="submit" size="lg" disabled={loading} className="w-full">
@@ -84,9 +87,16 @@ export function CheckoutForm({ email, name }: { email: string; name: string }) {
             </li>
           ))}
         </ul>
+        <div className="space-y-2 border-t border-hairline-soft pt-4 text-fs-14">
+          <div className="flex justify-between"><span>Subtotal</span><span>{formatNaira(subtotal)}</span></div>
+          <div className="flex justify-between">
+            <span>Delivery</span>
+            <span>{state.trim() ? formatNaira(fee) : "Enter your state"}</span>
+          </div>
+        </div>
         <div className="flex justify-between border-t border-hairline-soft pt-4 text-fs-16 font-medium">
           <span>Total</span>
-          <span>{formatNaira(subtotal)}</span>
+          <span>{formatNaira(subtotal + (state.trim() ? fee : 0))}</span>
         </div>
       </aside>
     </div>

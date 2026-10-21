@@ -6,9 +6,9 @@ const base =
   "inline-flex items-center justify-center gap-2 rounded-pill font-medium whitespace-nowrap transition duration-200 active:scale-[0.97] active:opacity-80 disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink";
 
 const variants = {
-  primary: "bg-ink text-white hover:bg-charcoal",
+  primary: "raised-dark bg-ink text-white hover:bg-charcoal",
   secondary: "bg-cloud text-ink hover:bg-hairline-soft",
-  outline: "bg-white text-ink hover:bg-cloud",
+  outline: "raised-light bg-white text-ink hover:bg-cloud",
   ghost: "border border-hairline bg-white text-ink hover:border-ink",
 } as const;
 

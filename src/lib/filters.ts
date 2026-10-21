@@ -1,4 +1,3 @@
-import { matchesType } from "./collections";
 import type { Gender, Product } from "./types";
 
 export type PriceBucket = "all" | "u30" | "30-60" | "60-100" | "o100";
@@ -16,7 +15,7 @@ export interface Filters {
   q: string;
   genders: Gender[];
   categories: string[];
-  /** sub-category slugs from lib/collections PRODUCT_TYPES */
+  /** sub-category slugs */
   types: string[];
   sizes: string[];
   colors: string[];
@@ -39,19 +38,22 @@ export const effectivePrice = (p: Product) => p.salePriceKobo ?? p.priceKobo;
 
 export function applyFilters(products: Product[], f: Filters, sort: SortKey): Product[] {
   const bucket = PRICE_BUCKETS.find((b) => b.id === f.price)!;
-  const q = f.q.trim().toLowerCase();
+  const words = f.q.trim().toLowerCase().split(/\s+/).filter(Boolean);
 
   const out = products.filter((p) => {
     // "men"/"women" listings also include unisex pieces
     if (f.genders.length && !f.genders.includes(p.gender) && p.gender !== "unisex") return false;
     if (f.categories.length && !f.categories.includes(p.category)) return false;
-    if (f.types.length && !f.types.some((t) => matchesType(p, t))) return false;
+    if (f.types.length && !f.types.includes(p.subcategory ?? "")) return false;
     if (f.sizes.length && !f.sizes.some((s) => p.sizes.includes(s))) return false;
     if (f.colors.length && !f.colors.some((c) => p.colors.some((pc) => pc.name === c))) return false;
     if (f.saleOnly && p.salePriceKobo === null) return false;
     const price = effectivePrice(p);
     if (price < bucket.min || price >= bucket.max) return false;
-    if (q && !`${p.name} ${p.subtitle} ${p.category}`.toLowerCase().includes(q)) return false;
+    if (words.length) {
+      const hay = `${p.name} ${p.subtitle} ${p.category} ${p.subcategory ?? ""} ${p.gender} ${p.colors.map((c) => c.name).join(" ")}`.toLowerCase();
+      if (!words.every((w) => hay.includes(w))) return false;
+    }
     return true;
   });
 

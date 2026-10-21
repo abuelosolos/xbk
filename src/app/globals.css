@@ -28,6 +28,7 @@
   --text-fs-12: var(--fs-12);
   --font-sans: var(--font-inter), "Helvetica Now Text", Helvetica, Arial, sans-serif;
   --font-display: var(--font-bebas), "Futura", Impact, sans-serif;
+  --font-brand: var(--font-poppins), "Poppins", Helvetica, Arial, sans-serif;
 }
 
 /* Type scale: phone < 640, tablet 640-1023, desktop >= 1024 (DESIGN.md sizes) */
@@ -98,6 +99,55 @@
   }
   .scrollbar-none::-webkit-scrollbar {
     display: none;
+  }
+  /* filled buttons, lit from above (subtle): top highlight, darker bottom edge, contact shadow, ~10% glow in the fill's colour */
+  .raised-dark {
+    background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.06), rgb(0 0 0 / 0.06));
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.2),
+      inset 0 -2px 0 rgb(0 0 0 / 0.3),
+      0 1px 2px rgb(0 0 0 / 0.25),
+      0 4px 16px rgb(17 17 17 / 0.1);
+    transition: box-shadow 0.2s, background-color 0.2s, transform 0.2s, opacity 0.2s;
+  }
+  .raised-dark:hover:not(:disabled) {
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.2),
+      inset 0 -2px 0 rgb(0 0 0 / 0.3),
+      0 1px 2px rgb(0 0 0 / 0.25),
+      0 6px 20px rgb(17 17 17 / 0.15);
+  }
+  .raised-dark:active:not(:disabled) {
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12), inset 0 -1px 0 rgb(0 0 0 / 0.3), 0 1px 1px rgb(0 0 0 / 0.2);
+  }
+  /* same lighting, no glow */
+  .raised-dark.raised-noglow,
+  .raised-dark.raised-noglow:hover:not(:disabled) {
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.2),
+      inset 0 -2px 0 rgb(0 0 0 / 0.3),
+      0 1px 2px rgb(0 0 0 / 0.25);
+  }
+  .raised-light {
+    background-image: linear-gradient(to bottom, rgb(255 255 255), rgb(0 0 0 / 0.04));
+    box-shadow:
+      inset 0 -1px 0 rgb(0 0 0 / 0.1),
+      0 1px 2px rgb(0 0 0 / 0.2),
+      0 4px 16px rgb(255 255 255 / 0.1);
+    transition: box-shadow 0.2s, background-color 0.2s, transform 0.2s, opacity 0.2s;
+  }
+  .raised-light:hover:not(:disabled) {
+    box-shadow:
+      inset 0 -1px 0 rgb(0 0 0 / 0.1),
+      0 1px 2px rgb(0 0 0 / 0.2),
+      0 6px 20px rgb(255 255 255 / 0.15);
+  }
+  .raised-light:active:not(:disabled) {
+    box-shadow: inset 0 -1px 0 rgb(0 0 0 / 0.12), 0 1px 1px rgb(0 0 0 / 0.15);
+  }
+  .raised-dark:disabled,
+  .raised-light:disabled {
+    box-shadow: none;
   }
 }
 

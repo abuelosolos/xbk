@@ -20,6 +20,10 @@ const CDN: Record<string, string> = {
   "_1BshZ602EM": "photo-1720462393492-046dfa56b1d1",
   "1eJ9cG97BD8": "photo-1640262653855-e47becae35ec",
   "Or4_-uT-S5c": "photo-1675609957648-5af309bf44f7",
+  "iZgfvYwo69Q": "photo-1770912395053-cbda6e2f0d21",
+  "OpDIYfAb4WQ": "photo-1759674804375-3d0c038a0a6a",
+  "QjG2dna1Ll8": "photo-1776935735302-b3ff2512367b",
+  "WAAkGFbZUus": "photo-1762709753393-a2937622949e",
 };
 
 export const unsplash = (id: string, width = 1200) =>

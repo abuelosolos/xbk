@@ -6,7 +6,7 @@ import { HubHero } from "@/components/hub/HubHero";
 import { HubTiles } from "@/components/hub/HubTiles";
 import { Reveal } from "@/components/motion/Reveal";
 import { HUBS, buildHub, findHub, shopHref } from "@/lib/collections";
-import { getAllProducts } from "@/lib/products";
+import { getAllProducts, getCategories } from "@/lib/products";
 
 // Only the hubs in lib/collections exist; any other top-level slug 404s.
 export const dynamicParams = false;
@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 function SectionHeading({ children, href }: { children: React.ReactNode; href?: string }) {
   return (
     <div className="mb-6 flex items-end justify-between gap-4">
-      <h2 className="text-fs-24 font-medium uppercase leading-tight lg:text-fs-32">{children}</h2>
+      <h2 className="text-fs-24 font-medium leading-tight">{children}</h2>
       {href && (
         <Link href={href} className="shrink-0 text-fs-16 font-medium underline underline-offset-4">
           Shop All
@@ -36,7 +36,8 @@ export default async function HubPage({ params }: { params: Params }) {
   const hub = findHub((await params).hub);
   if (!hub) notFound();
 
-  const { products, sections } = buildHub(hub, await getAllProducts());
+  const [catalog, categories] = await Promise.all([getAllProducts(), getCategories()]);
+  const { products, sections } = buildHub(hub, catalog, categories);
   const all = shopHref(hub.scope);
   // quick links: every section tile, flattened, minus duplicates
   const quick = [...new Map(sections.flatMap((s) => s.tiles).map((t) => [t.href, t])).values()];
@@ -48,7 +49,7 @@ export default async function HubPage({ params }: { params: Params }) {
       <nav aria-label={`${hub.title} categories`} className="border-b border-hairline-soft">
         <ul className="scrollbar-none mx-auto flex max-w-[1440px] gap-2 overflow-x-auto px-4 py-4 lg:px-12">
           <li>
-            <Link href={all} className="inline-flex h-10 items-center whitespace-nowrap rounded-pill bg-ink px-5 text-fs-14 font-medium text-white transition hover:bg-charcoal">
+            <Link href={all} className="inline-flex h-10 items-center whitespace-nowrap raised-dark rounded-pill bg-ink px-5 text-fs-14 font-medium text-white transition hover:bg-charcoal">
               All {hub.title}
             </Link>
           </li>

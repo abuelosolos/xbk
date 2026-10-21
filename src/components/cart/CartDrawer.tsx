@@ -8,6 +8,7 @@ import { EASE } from "@/lib/motion";
 import { formatNaira } from "@/lib/utils";
 import { cartCount, cartSubtotal, useCart } from "@/store/cart";
 import { useUI } from "@/store/ui";
+import { X } from "@phosphor-icons/react";
 
 export function CartDrawer() {
   const open = useUI((s) => s.cartOpen);
@@ -54,7 +55,7 @@ export function CartDrawer() {
             <div className="flex items-center justify-between border-b border-hairline-soft px-6 py-4">
               <h2 className="text-fs-24 font-medium leading-tight">Bag{mounted && count > 0 ? ` (${count})` : ""}</h2>
               <button type="button" aria-label="Close bag" onClick={close} className="flex size-10 items-center justify-center rounded-full bg-cloud transition active:scale-90">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M6 6l12 12M18 6 6 18" /></svg>
+                <X size={20} aria-hidden />
               </button>
             </div>
 

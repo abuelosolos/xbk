@@ -34,7 +34,7 @@ export function CategoryRail() {
                 alt=""
                 fill
                 sizes="(min-width:1024px) 25vw, (min-width:640px) 44vw, 72vw"
-                className="object-cover grayscale"
+                className="object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-b from-ink/60 via-ink/10 to-ink/40" />
             </div>

@@ -20,7 +20,7 @@ See `.env.example`. Set `ADMIN_EMAILS` to your email, then **sign up** with it �
 
 ## Paystack
 
-1. Add `PAYSTACK_SECRET_KEY` / `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` (test keys first).
+1. Add `PAYSTACK_SECRET_KEY` / `PAYSTACK_PUBLIC_KEY` (test keys first).
 2. In the Paystack dashboard set the webhook URL to `https://YOUR_DOMAIN/api/paystack/webhook`.
 3. Checkout flow: `/checkout` → `POST /api/checkout` (order + Paystack init) → Paystack → `/checkout/success` (server verifies) — the webhook settles the same order idempotently.
 

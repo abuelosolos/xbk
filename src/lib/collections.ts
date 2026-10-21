@@ -1,39 +1,15 @@
 import { unsplash } from "./images";
-import type { Gender, Product } from "./types";
+import type { Category, Gender, Product } from "./types";
 
-/**
- * Sub-categories ("types") inside each category. Products don't store a type,
- * so it's derived from name + subtitle; add a pattern here when you add a new
- * kind of product.
- */
-export interface ProductType {
-  slug: string;
-  label: string;
-  category: string;
-  pattern: RegExp;
-}
-
-export const PRODUCT_TYPES: ProductType[] = [
-  { slug: "running", label: "Running", category: "footwear", pattern: /running/i },
-  { slug: "training", label: "Training & Gym", category: "footwear", pattern: /training/i },
-  { slug: "lifestyle", label: "Lifestyle", category: "footwear", pattern: /lifestyle/i },
-  { slug: "tops", label: "Tops & T-Shirts", category: "clothing", pattern: /t-shirt|tee|tank|top/i },
-  { slug: "hoodies", label: "Hoodies & Sweatshirts", category: "clothing", pattern: /hoodie|sweatshirt/i },
-  { slug: "shorts", label: "Shorts", category: "clothing", pattern: /short/i },
-  { slug: "leggings", label: "Leggings & Tights", category: "clothing", pattern: /legging|tight/i },
-  { slug: "jackets", label: "Jackets & Outerwear", category: "clothing", pattern: /jacket|windbreaker/i },
-  { slug: "bags", label: "Bags & Backpacks", category: "accessories", pattern: /bag|backpack/i },
-  { slug: "socks", label: "Socks", category: "accessories", pattern: /sock/i },
-];
-
-export const findType = (slug?: string | null) => PRODUCT_TYPES.find((t) => t.slug === slug);
-
-export const matchesType = (p: Product, slug: string) => {
-  const t = findType(slug);
-  return !!t && p.category === t.category && t.pattern.test(`${p.name} ${p.subtitle}`);
+/** A sub-category looked up by slug, with the category it sits in. */
+export const findSubcategory = (categories: Category[], slug?: string | null, categorySlug?: string) => {
+  if (!slug) return undefined;
+  for (const c of categories) {
+    if (categorySlug && c.slug !== categorySlug) continue;
+    const sub = c.subcategories.find((s) => s.slug === slug);
+    if (sub) return { ...sub, category: c };
+  }
 };
-
-export const CATEGORY_LABEL: Record<string, string> = { footwear: "Shoes", clothing: "Clothing", accessories: "Accessories" };
 
 /** Lifestyle photography for category-level tiles (Unsplash photo ids). */
 const CATEGORY_PHOTO: Record<string, string> = {
@@ -103,18 +79,18 @@ export interface HubSection {
   tiles: Tile[];
 }
 
-const typeTiles = (products: Product[], scope: HubScope, category: string): Tile[] =>
-  PRODUCT_TYPES.filter((t) => t.category === category)
-    .map((t) => {
-      const items = products.filter((p) => matchesType(p, t.slug));
-      return { label: t.label, href: shopHref({ ...scope, category, type: t.slug }), image: items[0]?.images[0] ?? null, count: items.length };
+const typeTiles = (products: Product[], scope: HubScope, category: Category): Tile[] =>
+  category.subcategories
+    .map((sub) => {
+      const items = products.filter((p) => p.category === category.slug && p.subcategory === sub.slug);
+      return { label: sub.name, href: shopHref({ ...scope, category: category.slug, type: sub.slug }), image: items[0]?.images[0] ?? null, count: items.length };
     })
     .filter((t) => t.count > 0);
 
 /** Builds the tile sections for a hub from whatever products are in scope (empty ones are dropped). */
-export function buildHub(hub: Hub, all: Product[]): { products: Product[]; sections: HubSection[] } {
+export function buildHub(hub: Hub, all: Product[], categories: Category[]): { products: Product[]; sections: HubSection[] } {
   const products = all.filter((p) => inScope(p, hub.scope));
-  const categories = Object.keys(CATEGORY_LABEL).filter((c) => products.some((p) => p.category === c));
+  const present = categories.filter((c) => products.some((p) => p.category === c.slug));
   const sections: HubSection[] = [];
   const prefix = hub.scope.gender ? `${GENDER_LABEL[hub.scope.gender]} ` : hub.scope.sale ? "Sale " : "";
 
@@ -122,20 +98,21 @@ export function buildHub(hub: Hub, all: Product[]): { products: Product[]; secti
     sections.push({
       title: "Shop by Category",
       variant: "feature",
-      tiles: categories.map((c) => ({
-        label: `${prefix}${CATEGORY_LABEL[c]}`,
-        href: shopHref({ ...hub.scope, category: c }),
-        image: unsplash(CATEGORY_PHOTO[c], 1200),
-        count: products.filter((p) => p.category === c).length,
+      tiles: present.map((c) => ({
+        label: `${prefix}${c.name}`,
+        href: shopHref({ ...hub.scope, category: c.slug }),
+        image: CATEGORY_PHOTO[c.slug] ? unsplash(CATEGORY_PHOTO[c.slug], 1200) : products.find((p) => p.category === c.slug)?.images[0] ?? null,
+        count: products.filter((p) => p.category === c.slug).length,
       })),
     });
-    for (const c of categories) {
+    for (const c of present) {
       const tiles = typeTiles(products, hub.scope, c);
       // a lone type tile would just repeat the category tile above it
-      if (tiles.length > 1) sections.push({ title: `${prefix}${CATEGORY_LABEL[c]}`, variant: "grid", tiles });
+      if (tiles.length > 1) sections.push({ title: `${prefix}${c.name}`, variant: "grid", tiles });
     }
   } else {
-    const tiles = typeTiles(products, hub.scope, hub.scope.category);
+    const category = categories.find((c) => c.slug === hub.scope.category);
+    const tiles = category ? typeTiles(products, hub.scope, category) : [];
     if (tiles.length > 1) sections.push({ title: `Shop ${hub.title} by Type`, variant: "grid", tiles });
 
     const genders = (Object.keys(GENDER_LABEL) as (keyof typeof GENDER_LABEL)[])
@@ -151,14 +128,17 @@ export function buildHub(hub: Hub, all: Product[]): { products: Product[]; secti
 }
 
 /** Human title for a filtered shop listing, e.g. "Men's Running Shoes". */
-export function listingTitle({ gender, category, type, sale }: { gender?: Gender; category?: string; type?: string; sale?: boolean }) {
+export function listingTitle(
+  { gender, category, type, sale }: { gender?: Gender; category?: string; type?: string; sale?: boolean },
+  categories: Category[],
+) {
   const g = gender && gender !== "unisex" ? `${GENDER_LABEL[gender]} ` : "";
-  const t = findType(type);
-  const c = category ? CATEGORY_LABEL[category] ?? category : "";
+  const t = findSubcategory(categories, type, category);
+  const c = category ? categories.find((x) => x.slug === category)?.name ?? category : "";
   if (!t && !c) {
     if (g) return sale ? `${g}Sale` : gender![0].toUpperCase() + gender!.slice(1);
     return sale ? "Sale" : "All Products";
   }
-  const core = t ? (t.category === "footwear" ? `${t.label} Shoes` : t.label) : c;
+  const core = t ? (t.category.slug === "footwear" ? `${t.name} Shoes` : t.name) : c;
   return `${sale ? "Sale: " : ""}${g}${core}`;
 }

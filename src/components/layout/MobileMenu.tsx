@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, type Variants } from "motion/react";
+import { List, ShoppingBag, SignIn, SignOut, User, type Icon } from "@phosphor-icons/react";
 import type { ReactNode } from "react";
 import { authClient } from "@/lib/auth-client";
 import { unsplash } from "@/lib/images";
@@ -21,21 +22,14 @@ const row: Variants = {
 
 const rowClass = "flex w-full items-center gap-2.5 rounded-xl px-2 py-1.5 text-left font-medium transition hover:bg-cloud active:scale-[0.98]";
 
-// account group: quieter than the main links; the list itself is centred as a block
-// (see below) so every row shares one left edge
+// account group: same full-width rows as the main links, just quieter
 const utilClass = `${rowClass} text-fs-13 text-ink/60 hover:text-ink`;
 
-const Icon = ({ d }: { d: string }) => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden className="shrink-0">
-    <path d={d} />
-  </svg>
-);
-
 /** Plain icon + label row for the account group at the bottom. */
-function UtilityRow({ icon, children, ...props }: { icon: string; children: ReactNode } & ({ href: string; onClick: () => void } | { href?: undefined; onClick: () => void })) {
+function UtilityRow({ icon: Icon, children, ...props }: { icon: Icon; children: ReactNode } & ({ href: string; onClick: () => void } | { href?: undefined; onClick: () => void })) {
   const body = (
     <>
-      <Icon d={icon} />
+      <Icon size={20} className="shrink-0" aria-hidden />
       {children}
     </>
   );
@@ -86,21 +80,21 @@ export function MobileMenu({ onClose }: { onClose: () => void }) {
       </motion.ul>
 
       {/* account group sits at the bottom of the sheet */}
-      <motion.ul variants={list(NAV.length)} initial="hidden" animate="show" className="mx-auto mt-auto w-fit space-y-0.5 pt-6">
-        <UtilityRow href="/account" onClick={onClose} icon="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0">
+      <motion.ul variants={list(NAV.length)} initial="hidden" animate="show" className="mt-auto space-y-1 pt-6">
+        <UtilityRow href="/account" onClick={onClose} icon={User}>
           {session ? `Hi, ${session.user.name.split(" ")[0]}` : "Account"}
         </UtilityRow>
-        <UtilityRow href="/cart" onClick={onClose} icon="M5 8h14l-1 12H6L5 8Zm4 0V6a3 3 0 0 1 6 0v2">
+        <UtilityRow href="/cart" onClick={onClose} icon={ShoppingBag}>
           Bag
         </UtilityRow>
         {role === "admin" && (
-          <UtilityRow href="/admin" onClick={onClose} icon="M4 6h16M4 12h16M4 18h10">
+          <UtilityRow href="/admin" onClick={onClose} icon={List}>
             Admin
           </UtilityRow>
         )}
         {session ? (
           <UtilityRow
-            icon="M14 17l5-5-5-5M19 12H8M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"
+            icon={SignOut}
             onClick={async () => {
               onClose();
               await authClient.signOut();
@@ -111,7 +105,7 @@ export function MobileMenu({ onClose }: { onClose: () => void }) {
             Log Out
           </UtilityRow>
         ) : (
-          <UtilityRow href="/sign-in" onClick={onClose} icon="M10 17l5-5-5-5M15 12H3M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4">
+          <UtilityRow href="/sign-in" onClick={onClose} icon={SignIn}>
             Sign In
           </UtilityRow>
         )}

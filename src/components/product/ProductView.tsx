@@ -10,6 +10,7 @@ import type { Product } from "@/lib/types";
 import { cn, formatNaira } from "@/lib/utils";
 import { useCart } from "@/store/cart";
 import { useUI } from "@/store/ui";
+import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 
 export function ProductView({ product }: { product: Product }) {
   const add = useCart((s) => s.add);
@@ -70,10 +71,10 @@ export function ProductView({ product }: { product: Product }) {
   }
 
   return (
-    <div className="mx-auto grid max-w-[1440px] gap-8 px-4 pt-8 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-12 lg:px-12">
+    <div className="mx-auto grid max-w-[1440px] gap-8 px-4 pt-6 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-12 lg:px-24 lg:pt-8">
       {/* gallery */}
       <div className="flex flex-col-reverse gap-2 lg:flex-row">
-        <ul className="flex gap-2 lg:flex-col">
+        <ul className="flex gap-2 overflow-x-auto lg:max-h-[calc(100dvh-8rem)] lg:flex-col lg:overflow-y-auto lg:overflow-x-visible [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {views.map((src, i) => (
             <li key={i}>
               <button
@@ -82,7 +83,7 @@ export function ProductView({ product }: { product: Product }) {
                 aria-current={view === i}
                 onMouseEnter={() => setView(i)}
                 onClick={() => setView(i)}
-                className={cn("block size-16 overflow-hidden transition lg:size-[72px]", view === i ? "ring-2 ring-ink" : "opacity-70 hover:opacity-100")}
+                className={cn("block size-16 shrink-0 overflow-hidden rounded-lg transition lg:size-[60px]", view === i ? "ring-2 ring-ink" : "opacity-70 hover:opacity-100")}
               >
                 <FramedImage src={src} label={`${product.name} view ${i + 1}`} className="size-full" sizes="96px" />
               </button>
@@ -98,9 +99,24 @@ export function ProductView({ product }: { product: Product }) {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.25, ease: EASE }}
             >
-              <FramedImage src={views[view]} label={product.name} className="aspect-square lg:aspect-[4/5]" priority sizes="(min-width:1024px) 60vw, 100vw" />
+              <FramedImage src={views[view]} label={product.name} className="aspect-square rounded-lg lg:aspect-[4/5]" priority sizes="(min-width:1024px) 60vw, 100vw" />
             </motion.div>
           </AnimatePresence>
+          {views.length > 1 && (
+            <div className="absolute bottom-4 right-4 flex gap-2">
+              {([-1, 1] as const).map((d) => (
+                <button
+                  key={d}
+                  type="button"
+                  aria-label={d < 0 ? "Previous image" : "Next image"}
+                  onClick={() => setView((v) => (v + d + views.length) % views.length)}
+                  className="flex size-10 items-center justify-center rounded-full bg-white text-ink transition hover:bg-cloud active:scale-90"
+                >
+                  {d < 0 ? <CaretLeft size={18} aria-hidden /> : <CaretRight size={18} aria-hidden />}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -164,7 +180,7 @@ export function ProductView({ product }: { product: Product }) {
           <Button size="lg" disabled={soldOut} onClick={addToBag} className="w-full">
             <AnimatePresence mode="wait" initial={false}>
               <motion.span key={added ? "added" : "add"} initial={{ y: 12, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -12, opacity: 0 }} transition={{ duration: 0.18 }}>
-                {soldOut ? "Sold Out" : added ? "Added to Bag ✓" : "Add to Bag"}
+                {soldOut ? "Sold Out" : added ? "Added to Bag" : "Add to Bag"}
               </motion.span>
             </AnimatePresence>
           </Button>
@@ -187,7 +203,7 @@ export function ProductView({ product }: { product: Product }) {
             className="fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-white px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] lg:hidden"
           >
             <Button size="lg" disabled={soldOut} onClick={addToBag} className="w-full">
-              {soldOut ? "Sold Out" : added ? "Added to Bag ✓" : size ? `Add to Bag · ${size}` : "Add to Bag"}
+              {soldOut ? "Sold Out" : added ? "Added to Bag" : size ? `Add to Bag · ${size}` : "Add to Bag"}
             </Button>
           </motion.div>
         )}

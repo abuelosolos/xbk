@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { ShopClient } from "@/components/shop/ShopClient";
-import { findHub, findType, listingTitle } from "@/lib/collections";
+import { findSubcategory, listingTitle } from "@/lib/collections";
 import { PRICE_BUCKETS, type Filters, type PriceBucket, type SortKey } from "@/lib/filters";
-import { getAllProducts } from "@/lib/products";
+import { getAllProducts, getCategories } from "@/lib/products";
 import type { Gender } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Shop All" };
@@ -15,11 +15,11 @@ const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v
 
 export default async function ShopPage({ searchParams }: { searchParams: Promise<SP> }) {
   const sp = await searchParams;
-  const products = await getAllProducts();
+  const [products, categories] = await Promise.all([getAllProducts(), getCategories()]);
 
   const gender = first(sp.gender) as Gender | undefined;
   const category = first(sp.category);
-  const type = findType(first(sp.type))?.slug;
+  const type = findSubcategory(categories, first(sp.type), first(sp.category))?.slug;
   const price = first(sp.price) as PriceBucket | undefined;
   const sort = first(sp.sort) as SortKey | undefined;
 
@@ -35,21 +35,16 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
   const validGender = gender && GENDERS.includes(gender) ? gender : undefined;
   const title = initial.q
     ? `Results for “${initial.q}”`
-    : listingTitle({ gender: validGender, category, type, sale: initial.saleOnly });
-
-  // breadcrumb back to the hub pages this listing sits under
-  const crumbs = [validGender && findHub(validGender), category && findHub(category), initial.saleOnly && findHub("sale")]
-    .filter((h): h is NonNullable<ReturnType<typeof findHub>> => !!h)
-    .map((h) => ({ label: h.title, href: `/${h.slug}` }));
+    : listingTitle({ gender: validGender, category, type, sale: initial.saleOnly }, categories);
 
   return (
     <ShopClient
       key={JSON.stringify(sp)}
       products={products}
+      categories={categories}
       initial={initial}
       initialSort={sort && SORTS.includes(sort) ? sort : "featured"}
       title={title}
-      crumbs={initial.q ? [] : crumbs}
     />
   );
 }
