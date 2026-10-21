@@ -2,6 +2,7 @@
 
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { revalidateCatalogue } from "@/lib/revalidate";
 import { z } from "zod";
 import { getDb } from "@/db";
 import { categories, products, subcategories } from "@/db/schema";
@@ -18,10 +19,7 @@ const fail = (e: z.ZodError): CategoryState => ({ error: e.issues[0]?.message ??
 
 function refresh() {
   revalidatePath("/admin/categories");
-  revalidatePath("/admin/products");
-  revalidatePath("/shop");
-  revalidatePath("/");
-  revalidatePath("/[hub]", "page");
+  revalidateCatalogue();
 }
 
 const PATH = "/admin/categories";

@@ -14,7 +14,13 @@ function createAuth() {
   return betterAuth({
     database: drizzleAdapter(getDb(), { provider: "pg", schema }),
     baseURL: process.env.BETTER_AUTH_URL,
-    trustedOrigins: process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : undefined,
+    // BETTER_AUTH_TRUSTED_ORIGINS: extra origins (www, custom domains), comma-separated.
+    trustedOrigins: [process.env.BETTER_AUTH_URL, ...(process.env.BETTER_AUTH_TRUSTED_ORIGINS ?? "").split(",")]
+      .map((o) => o?.trim())
+      .filter((o): o is string => Boolean(o)),
+    // Google links to an existing password account only once that account's email is verified (the
+    // default). Deliberately no trustedProviders / allowDifferentEmails: both enable account takeover.
+    account: { accountLinking: { enabled: true } },
     session: {
       expiresIn: 30 * DAY,
       updateAge: DAY,

@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { eq } from "drizzle-orm";
+import { cookies } from "next/headers";
 import { getDb, hasDb } from "@/db";
 import { newsletterSubscribers } from "@/db/schema";
 import { Button } from "@/components/ui/Button";
-import { validUnsubscribeToken } from "@/lib/newsletter";
+import { NEWSLETTER_COOKIE, validUnsubscribeToken } from "@/lib/newsletter";
 
 export const metadata: Metadata = { title: "Unsubscribe" };
 export const dynamic = "force-dynamic";
@@ -16,6 +17,7 @@ export default async function UnsubscribePage({ searchParams }: { searchParams: 
     "use server";
     if (!valid || !hasDb()) return;
     await getDb().update(newsletterSubscribers).set({ unsubscribedAt: new Date() }).where(eq(newsletterSubscribers.email, e.toLowerCase()));
+    (await cookies()).delete(NEWSLETTER_COOKIE);
     const { redirect } = await import("next/navigation");
     redirect(`/unsubscribe?e=${encodeURIComponent(e)}&t=${t}&done=1`);
   }

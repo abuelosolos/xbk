@@ -1,9 +1,9 @@
 import { and, eq, sql } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
 import { getDb } from "@/db";
 import { orderItems, orders } from "@/db/schema";
 import { sendOrderEmails } from "./email";
 import { verifyTransaction } from "./paystack";
+import { revalidateCatalogue } from "./revalidate";
 
 export type SettleResult =
   | { ok: true; orderId: string }
@@ -54,6 +54,42 @@ export async function markPaidAndDecrement(orderId: string) {
   return { moved: (row?.moved ?? 0) > 0, shortfall: Boolean(row?.shortfall), slugs };
 }
 
+/**
+ * Cancels a paid/shipped order and puts back exactly what its `sale` movements took (an oversold order
+ * returns less than it asked for), logging one `return` movement per product. One statement, so a
+ * double click or a crash can't restock twice or cancel without restocking.
+ */
+export async function cancelOrderAndRestock(orderId: string, actorId: string, note: string | null) {
+  const result = await getDb().execute<{ moved: number; slugs: string[] | string | null }>(sql`
+    WITH cancelled AS (
+      UPDATE orders SET status = 'cancelled', cancelled_at = now(), cancel_note = ${note}
+      WHERE id = ${orderId}::uuid AND status IN ('paid', 'shipped')
+      RETURNING id
+    ),
+    sold AS (
+      SELECT product_id, sum(-delta)::int AS qty FROM stock_movements
+      WHERE order_id = ${orderId}::uuid AND reason = 'sale'
+      GROUP BY product_id HAVING sum(-delta) > 0
+    ),
+    restock AS (
+      UPDATE products p SET stock = p.stock + s.qty
+      FROM sold s
+      WHERE p.id = s.product_id AND EXISTS (SELECT 1 FROM cancelled)
+      RETURNING p.id AS product_id, p.slug, p.stock AS stock_after, s.qty
+    ),
+    mv AS (
+      INSERT INTO stock_movements (product_id, delta, stock_after, reason, order_id, actor_user_id, note)
+      SELECT product_id, qty, stock_after, 'return', ${orderId}::uuid, ${actorId}, 'Order cancelled' FROM restock
+    )
+    SELECT (SELECT count(*) FROM cancelled)::int AS moved,
+           coalesce((SELECT json_agg(slug) FROM restock), '[]'::json) AS slugs
+  `);
+  const row = result.rows[0];
+  const slugs = typeof row?.slugs === "string" ? (JSON.parse(row.slugs) as string[]) : (row?.slugs ?? []);
+  if ((row?.moved ?? 0) > 0) refreshStorefront(slugs);
+  return { moved: (row?.moved ?? 0) > 0 };
+}
+
 /** Customers can still pay these later (see markPaidAndDecrement); expiring only tidies stale checkouts. No stock is held by pending orders. */
 export const PENDING_ORDER_TTL_HOURS = 24;
 
@@ -73,15 +109,7 @@ export async function expireStalePending() {
  * rendering (the success page), so a failure here is ignored: the webhook path does the refresh.
  */
 function refreshStorefront(slugs: string[]) {
-  try {
-    for (const slug of slugs) revalidatePath(`/product/${slug}`);
-    revalidatePath("/shop");
-    revalidatePath("/");
-    revalidatePath("/[hub]", "page");
-    revalidatePath("/admin/inventory");
-  } catch {
-    /* rendering context */
-  }
+  revalidateCatalogue(slugs);
 }
 
 /**

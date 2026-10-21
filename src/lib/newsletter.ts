@@ -1,5 +1,8 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
+/** Remembers on this browser that someone subscribed. A flag only, never the address. */
+export const NEWSLETTER_COOKIE = "xbk_nl";
+
 const secret = () => process.env.BETTER_AUTH_SECRET ?? "dev-only-secret";
 
 export const unsubscribeToken = (email: string) => createHmac("sha256", secret()).update(email.toLowerCase()).digest("hex");

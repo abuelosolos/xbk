@@ -170,6 +170,7 @@ export const orderStatus = pgEnum("order_status", [
   "failed",
   "shipped",
   "delivered",
+  "cancelled",
 ]);
 
 export type ShippingAddress = {
@@ -196,6 +197,9 @@ export const orders = pgTable(
     paidAt: timestamp("paid_at"),
     shippedAt: timestamp("shipped_at"),
     deliveredAt: timestamp("delivered_at"),
+    cancelledAt: timestamp("cancelled_at"),
+    /** Admin note on a cancellation, e.g. the Paystack refund reference. */
+    cancelNote: text("cancel_note"),
     /** True when stock could not fully cover this order at payment time (oversold). */
     stockShortfall: boolean("stock_shortfall").notNull().default(false),
   },

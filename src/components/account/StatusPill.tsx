@@ -6,6 +6,7 @@ const tone = {
   delivered: "bg-success/10 text-success",
   failed: "bg-sale/10 text-sale",
   pending: "bg-cloud text-mute",
+  cancelled: "bg-cloud text-mute",
 } as const;
 
 export function StatusPill({ status, className }: { status: keyof typeof tone; className?: string }) {

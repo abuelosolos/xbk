@@ -11,7 +11,9 @@ Next.js 15 (App Router) · TypeScript · Tailwind CSS v4 · Neon Postgres via Dr
 - `npm run build` — production build
 - `npm run db:generate` — migration files · `db:migrate` — apply them · `db:seed` — load categories + demo products
 - Env: copy `.env.example` → `.env.local`. Never create or commit real env files.
-- Setup checklist: fill every var in `.env.example`; `db:migrate`; sign up with an email in `ADMIN_EMAILS` to get the admin role (set only at sign-up); use Paystack **test** keys until launch (the success page settles orders locally, the webhook `{APP_URL}/api/paystack/webhook` only matters once deployed); `BLOB_READ_WRITE_TOKEN` enables admin photo uploads and `RESEND_API_KEY` + `EMAIL_FROM` enable order emails (both are skipped with a warning when unset).
+- Google sign-in: Web OAuth client with redirect URIs `{BETTER_AUTH_URL}/api/auth/callback/google` (localhost and production); on the host set `GOOGLE_CLIENT_ID/SECRET`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` (real origin) and `BETTER_AUTH_TRUSTED_ORIGINS` for extra domains. Linking stays on defaults (verified email only); never add `trustedProviders` or `allowDifferentEmails`.
+- Catalogue changes go through `lib/revalidate.ts` `revalidateCatalogue`; cached pages also carry `revalidate = 300`.
+- Setup checklist: fill every var in `.env.example`; `db:migrate`; sign up with an email in `ADMIN_EMAILS` to get the admin role (set only at sign-up); use Paystack **test** keys until launch (the success page settles orders locally, the webhook `{APP_URL}/api/paystack/webhook` only matters once deployed); `BLOB_READ_WRITE_TOKEN` enables admin photo uploads (the browser uploads straight to Blob via `app/admin/blob-upload`; the product form submits only URLs; link a Blob store in Vercel) and `RESEND_API_KEY` + `EMAIL_FROM` enable order emails (both are skipped with a warning when unset).
 
 ## Layout
 ```
@@ -29,6 +31,7 @@ src/
 
 ## Rules
 - Money is integer **kobo** everywhere; format only at the edge with `formatNaira`, and turn typed naira into kobo with `nairaToKobo`, never `Math.round(n * 100)`.
+- Migrations apply themselves: `npm run dev` runs `scripts/migrate.mjs --soft` first (skipped without `DATABASE_URL`, warns instead of blocking), and production builds (`VERCEL_ENV=production`, or `MIGRATE_ON_BUILD=1`) run it before `next build` and stop the deploy if it fails. Previews and local builds never migrate. Never edit an applied migration; keep changes backwards compatible (add first, drop/rename in a later release) because the old code serves while the migration runs.
 - Database: change the schema only via migrations (`schema.ts` → `db:generate` → read and hand-edit the SQL if existing rows must be carried over → `db:migrate`). Never `db:push` a real database; try risky migrations on a Neon branch first.
 - Only `lib/products.ts` queries the catalogue; it joins categories so `Product.category`/`.subcategory` stay plain slugs. The standard categories live in `db/catalog-data.ts` and in migration `0001`; keep them in step.
 - Delivery fee: `lib/shipping.ts` is the one source for fee and delivery-window logic; rates per state live in `shipping_rates` (edited at /admin/shipping, read via `lib/shipping-rates.ts`; defaults in `DEFAULT_RATES` and migration `0004`). The form shows it, `api/checkout` charges it, stored in `orders.shipping_fee_kobo`; `total_kobo` includes it.

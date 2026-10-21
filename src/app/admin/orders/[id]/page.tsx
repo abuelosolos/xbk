@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { StatusPill } from "@/components/account/StatusPill";
+import { CancelOrderForm } from "@/components/admin/CancelOrderForm";
 import { OrderStatusForm } from "@/components/admin/OrderStatusForm";
 import { getDb, hasDb } from "@/db";
 import { orderItems, orders } from "@/db/schema";
@@ -85,6 +86,22 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
         <p className="mt-10 text-fs-14 text-mute">
           {order.status === "delivered" ? "This order has been delivered." : `A ${order.status} order can't be advanced.`}
         </p>
+      )}
+
+      {order.status === "cancelled" && (
+        <p className="mt-6 text-fs-14 text-mute">
+          Cancelled {order.cancelledAt?.toLocaleDateString("en-NG")}. Items were returned to stock.
+          {order.cancelNote && <> Note: <span className="text-ink">{order.cancelNote}</span></>}
+        </p>
+      )}
+      {(order.status === "paid" || order.status === "shipped") && (
+        <section className="mt-10">
+          <h2 className="mb-3 text-fs-20 font-medium">Cancel or refund</h2>
+          <CancelOrderForm
+            orderId={order.id}
+            defaultMessage={`Hi ${vars.name},\n\nYour XBK order ${vars.reference} has been cancelled and your payment will be refunded to your original payment method.\n\nXBK`}
+          />
+        </section>
       )}
     </>
   );

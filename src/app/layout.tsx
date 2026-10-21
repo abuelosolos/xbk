@@ -3,7 +3,7 @@ import { Bebas_Neue, Inter, Poppins } from "next/font/google";
 import { BackToTop } from "@/components/layout/BackToTop";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { FooterGate } from "@/components/layout/FooterGate";
-import { Navbar } from "@/components/layout/Navbar";
+import { NavbarGate } from "@/components/layout/NavbarGate";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
@@ -19,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${inter.variable} ${bebas.variable} ${poppins.variable}`}>
       <body className="min-h-dvh">
-        <Navbar />
+        <NavbarGate />
         <main>{children}</main>
         <FooterGate />
         <CartDrawer />

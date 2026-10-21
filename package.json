@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/migrate.mjs --soft",
     "dev": "next dev --turbopack",
+    "prebuild": "node scripts/migrate.mjs --build",
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
@@ -16,7 +18,7 @@
     "check:guards": "node scripts/check-admin-guards.mjs",
     "test": "vitest run",
     "test:stock": "tsx scripts/stock-race.ts",
-    "verify": "npm run typecheck && npm run check:guards && npm run test"
+    "verify": "npm run typecheck && npm run check:guards && npx drizzle-kit check && npm run test"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.0",
