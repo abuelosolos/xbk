@@ -1,11 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { subscribeNewsletter } from "@/app/actions/newsletter";
+import { ErrorBubble } from "@/components/ui/Field";
 import { cn } from "@/lib/utils";
+import { email as emailRule } from "@/lib/validation";
 
-/** Footer newsletter signup. Not connected to a mailing list yet: it only validates and confirms. */
+/** Footer newsletter signup: validates, then stores the address and sends the welcome email. */
 export function NewsletterForm({ className }: { className?: string }) {
   const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | undefined>();
 
   return (
     <div className={cn("w-full max-w-md", className)}>
@@ -14,16 +18,22 @@ export function NewsletterForm({ className }: { className?: string }) {
         <p role="status" className="text-fs-14 font-medium text-mute">You&apos;re on the list. Watch your inbox.</p>
       ) : (
         <form
-          className="flex h-11 items-center rounded-pill border border-hairline pl-4 pr-1 focus-within:border-ink"
-          onSubmit={(e) => {
+          noValidate
+          className="relative flex h-11 items-center rounded-pill border border-hairline pl-4 pr-1 focus-within:border-ink"
+          onSubmit={async (e) => {
             e.preventDefault();
+            const r = emailRule.safeParse(new FormData(e.currentTarget).get("email") ?? "");
+            if (!r.success) return setError(r.error.issues[0]?.message);
+            const res = await subscribeNewsletter(r.data);
+            if (!res.ok) return setError(res.error);
             setDone(true);
           }}
         >
           <input
             type="email"
             name="email"
-            required
+            aria-invalid={error ? true : undefined}
+            onChange={() => setError(undefined)}
             autoComplete="email"
             placeholder="Your email"
             aria-label="Email address"
@@ -32,6 +42,7 @@ export function NewsletterForm({ className }: { className?: string }) {
           <button type="submit" className="h-9 shrink-0 raised-dark raised-noglow rounded-pill bg-ink px-4 text-fs-14 font-medium text-white transition hover:bg-charcoal active:scale-[0.97]">
             Subscribe
           </button>
+          <ErrorBubble message={error} />
         </form>
       )}
       <p className="mt-3 text-fs-12 text-mute">By subscribing you agree to receive XBK emails. Unsubscribe any time.</p>

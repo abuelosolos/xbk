@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
-import { LogoMark } from "@/components/brand/Logo";
+import { Logo } from "@/components/brand/Logo";
 import { FramedImage } from "@/components/product/FramedImage";
 import { EASE } from "@/lib/motion";
 import { NAV } from "@/lib/nav";
@@ -89,8 +89,8 @@ export function SearchOverlay({ onClose }: { onClose: () => void }) {
       >
         <div className="mx-auto max-w-[1440px] px-4 pb-8 lg:px-12 lg:pb-12">
           <div className="grid h-14 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 pt-2 lg:grid-cols-[1fr_minmax(0,2fr)_1fr] lg:gap-8">
-            <Link href="/" onClick={onClose} aria-label="XBK home" className="w-8 shrink-0 text-ink">
-              <LogoMark className="w-full" />
+            <Link href="/" onClick={onClose} aria-label="XBK home" className="w-[29px] shrink-0">
+              <Logo className="w-full" />
             </Link>
             <form
               role="search"

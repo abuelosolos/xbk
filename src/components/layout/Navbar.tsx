@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
-import { LogoMark } from "@/components/brand/Logo";
+import { Logo } from "@/components/brand/Logo";
 import { MobileMenu } from "@/components/layout/MobileMenu";
 import { SearchOverlay } from "@/components/layout/SearchOverlay";
 import { authClient } from "@/lib/auth-client";
@@ -17,16 +17,10 @@ import { List, MagnifyingGlass, ShoppingBag, User } from "@phosphor-icons/react"
 /** Account entry for md+ (the mobile menu carries its own account rows). */
 function AccountLink() {
   const { data: session } = authClient.useSession();
-  const role = (session?.user as { role?: string } | undefined)?.role;
   const label = session ? `Account, ${session.user.name.split(" ")[0]}` : "Sign in";
 
   return (
     <>
-      {role === "admin" && (
-        <Link href="/admin" className="hidden h-9 items-center rounded-pill px-3 text-fs-14 font-medium transition hover:bg-cloud md:flex">
-          Admin
-        </Link>
-      )}
       <Link
         href={session ? "/account" : "/sign-in"}
         aria-label={label}
@@ -136,8 +130,8 @@ export function Navbar() {
         transition={{ duration: 0.3, ease: EASE }}
       >
         <div className="mx-auto flex h-14 max-w-[1440px] items-center justify-between px-4 lg:px-12">
-          <Link href="/" aria-label="XBK home" className="w-8 shrink-0 text-ink">
-            <LogoMark className="w-full" />
+          <Link href="/" aria-label="XBK home" className="w-[29px] shrink-0">
+            <Logo className="w-full" />
           </Link>
 
           <nav className="ml-8 mr-auto hidden lg:block" aria-label="Primary">

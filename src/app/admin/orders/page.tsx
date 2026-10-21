@@ -1,20 +1,40 @@
-import { desc } from "drizzle-orm";
-import { Button } from "@/components/ui/Button";
+import { desc, eq } from "drizzle-orm";
+import Link from "next/link";
+import { StatusPill } from "@/components/account/StatusPill";
 import { getDb, hasDb } from "@/db";
-import { orders } from "@/db/schema";
-import { formatNaira } from "@/lib/utils";
-import { markShipped } from "./actions";
+import { orders, orderStatus } from "@/db/schema";
+import { expireStalePending } from "@/lib/orders";
+import { requireAdmin } from "@/lib/session";
+import { cn, formatNaira } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminOrdersPage() {
-  const rows = hasDb() ? await getDb().select().from(orders).orderBy(desc(orders.createdAt)).limit(100) : [];
+const FILTERS = ["all", ...orderStatus.enumValues] as const;
+
+export default async function AdminOrdersPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
+  await requireAdmin("/admin/orders");
+  await expireStalePending();
+  const { status } = await searchParams;
+  const filter = FILTERS.find((f) => f === status) ?? "all";
+  const query = hasDb() ? getDb().select().from(orders) : null;
+  const rows = query ? await (filter === "all" ? query : query.where(eq(orders.status, filter))).orderBy(desc(orders.createdAt)).limit(100) : [];
 
   return (
     <>
-      <h1 className="mb-6 text-fs-32 font-medium leading-tight">Orders</h1>
+      <h1 className="mb-4 text-fs-32 font-medium leading-tight">Orders</h1>
+      <nav aria-label="Filter by status" className="mb-6 flex flex-wrap gap-2">
+        {FILTERS.map((f) => (
+          <Link
+            key={f}
+            href={f === "all" ? "/admin/orders" : `/admin/orders?status=${f}`}
+            className={cn("rounded-pill px-4 py-1.5 text-fs-14 font-medium capitalize", f === filter ? "bg-ink text-white" : "bg-cloud hover:bg-hairline-soft")}
+          >
+            {f}
+          </Link>
+        ))}
+      </nav>
       {rows.length === 0 ? (
-        <p className="text-fs-16 text-mute">{hasDb() ? "No orders yet." : "Set DATABASE_URL to see orders."}</p>
+        <p className="text-fs-16 text-mute">{hasDb() ? "No orders here." : "Set DATABASE_URL to see orders."}</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-fs-14">
@@ -22,26 +42,21 @@ export default async function AdminOrdersPage() {
               <tr>
                 <th className="py-3 pr-4 font-medium">Ref</th>
                 <th className="py-3 pr-4 font-medium">Customer</th>
+                <th className="py-3 pr-4 font-medium">State</th>
                 <th className="py-3 pr-4 font-medium">Total</th>
                 <th className="py-3 pr-4 font-medium">Status</th>
-                <th className="py-3 font-medium" />
               </tr>
             </thead>
             <tbody className="divide-y divide-hairline-soft">
               {rows.map((o) => (
                 <tr key={o.id}>
-                  <td className="py-3 pr-4 font-medium">{o.reference.slice(-8).toUpperCase()}</td>
-                  <td className="py-3 pr-4">{o.shipping.fullName}<br /><span className="text-mute">{o.email}</span></td>
-                  <td className="py-3 pr-4">{formatNaira(o.totalKobo)}</td>
-                  <td className="py-3 pr-4 capitalize">{o.status}</td>
-                  <td className="py-3 text-right">
-                    {o.status === "paid" && (
-                      <form action={markShipped}>
-                        <input type="hidden" name="id" value={o.id} />
-                        <Button type="submit" size="sm" variant="secondary">Mark shipped</Button>
-                      </form>
-                    )}
+                  <td className="py-3 pr-4 font-medium">
+                    <Link href={`/admin/orders/${o.id}`} className="underline underline-offset-4">{o.reference.slice(-8).toUpperCase()}</Link>
                   </td>
+                  <td className="py-3 pr-4">{o.shipping.fullName}<br /><span className="text-mute">{o.email}</span></td>
+                  <td className="py-3 pr-4">{o.shipping.state}</td>
+                  <td className="py-3 pr-4">{formatNaira(o.totalKobo)}</td>
+                  <td className="py-3 pr-4"><StatusPill status={o.status} />{o.stockShortfall && <span className="ml-2 text-fs-12 font-medium text-ink underline">Oversold</span>}</td>
                 </tr>
               ))}
             </tbody>

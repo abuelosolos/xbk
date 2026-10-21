@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, type Variants } from "motion/react";
-import { List, ShoppingBag, SignIn, SignOut, User, type Icon } from "@phosphor-icons/react";
+import { ShoppingBag, SignIn, SignOut, User, type Icon } from "@phosphor-icons/react";
 import type { ReactNode } from "react";
 import { authClient } from "@/lib/auth-client";
 import { unsplash } from "@/lib/images";
@@ -53,7 +53,6 @@ function UtilityRow({ icon: Icon, children, ...props }: { icon: Icon; children: 
 export function MobileMenu({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const { data: session } = authClient.useSession();
-  const role = (session?.user as { role?: string } | undefined)?.role;
 
   return (
     <motion.div
@@ -87,11 +86,6 @@ export function MobileMenu({ onClose }: { onClose: () => void }) {
         <UtilityRow href="/cart" onClick={onClose} icon={ShoppingBag}>
           Bag
         </UtilityRow>
-        {role === "admin" && (
-          <UtilityRow href="/admin" onClick={onClose} icon={List}>
-            Admin
-          </UtilityRow>
-        )}
         {session ? (
           <UtilityRow
             icon={SignOut}

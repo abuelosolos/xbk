@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Bebas_Neue, Inter, Poppins } from "next/font/google";
 import { BackToTop } from "@/components/layout/BackToTop";
 import { CartDrawer } from "@/components/cart/CartDrawer";
-import { Footer } from "@/components/layout/Footer";
+import { FooterGate } from "@/components/layout/FooterGate";
 import { Navbar } from "@/components/layout/Navbar";
 import "./globals.css";
 
@@ -21,7 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-dvh">
         <Navbar />
         <main>{children}</main>
-        <Footer />
+        <FooterGate />
         <CartDrawer />
         <BackToTop />
       </body>
