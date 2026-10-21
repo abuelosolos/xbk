@@ -118,13 +118,26 @@ function AccountDetails({ user }: { user: Account }) {
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [hasPassword, setHasPassword] = useState(false);
+  const [accountsLoaded, setAccountsLoaded] = useState(false);
   const [editingPassword, setEditingPassword] = useState(false);
   const nameV = useFieldErrors(nameSchema);
   const passV = useFieldErrors(passwordSchema);
 
   useEffect(() => {
-    authClient.listAccounts().then(({ data }) => setHasPassword(!!data?.some((a) => a.providerId === "credential")));
+    authClient.listAccounts().then(({ data }) => {
+      setHasPassword(!!data?.some((a) => a.providerId === "credential"));
+      setAccountsLoaded(true);
+    });
   }, []);
+
+  /** Google-only accounts have no password; the reset link lets them choose one. */
+  async function sendSetPasswordLink() {
+    setBusy(true);
+    setMsg(null);
+    const { error } = await authClient.requestPasswordReset({ email: user.email, redirectTo: "/reset-password" });
+    setBusy(false);
+    setMsg(error ? { ok: false, text: error.message ?? "Couldn't send the email." } : { ok: true, text: `We emailed a link to ${user.email} to set your password.` });
+  }
 
   async function saveName(e: React.FormEvent) {
     e.preventDefault();
@@ -173,6 +186,18 @@ function AccountDetails({ user }: { user: Account }) {
           Save
         </Button>
       </form>
+
+      {accountsLoaded && !hasPassword && (
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-fs-16 font-medium">Password</p>
+            <p className="text-fs-16 text-mute">You sign in with Google. Add a password to also sign in with your email.</p>
+          </div>
+          <button type="button" disabled={busy} onClick={sendSetPasswordLink} className="shrink-0 text-fs-14 font-medium underline underline-offset-4">
+            Set password
+          </button>
+        </div>
+      )}
 
       {hasPassword && (
         <div>

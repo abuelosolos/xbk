@@ -8,6 +8,9 @@ import { ButtonLink } from "@/components/ui/Button";
 import { unsplash } from "@/lib/images";
 import { getAllProducts } from "@/lib/products";
 
+// Admin actions revalidate on change; this is the backstop for anything they miss.
+export const revalidate = 300;
+
 function SectionHeading({ children, href }: { children: React.ReactNode; href?: string }) {
   return (
     <div className="mb-6 flex items-end justify-between">

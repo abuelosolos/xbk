@@ -5,8 +5,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { z } from "zod";
 import { GoogleIcon } from "@/components/brand/ProviderIcons";
+import { AuthHeader } from "@/components/auth/AuthHeader";
+import { AuthShell } from "@/components/auth/AuthShell";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
+import { Envelope, Lock, User } from "@phosphor-icons/react";
 import { authClient } from "@/lib/auth-client";
 import { useFieldErrors } from "@/lib/use-field-errors";
 import { safeNext } from "@/lib/utils";
@@ -15,10 +18,19 @@ import { email as emailRule, fullName, newPassword } from "@/lib/validation";
 const signUpSchema = z.object({ name: fullName, email: emailRule, password: newPassword });
 const signInSchema = z.object({ email: emailRule, password: z.string().min(1, "Enter your password.") });
 
+const OAUTH_ERRORS: Record<string, string> = {
+  access_denied: "Google sign-in was cancelled.",
+  "account_not_linked": "An account with this email already exists. Sign in with your password, then connect Google under Linked Accounts.",
+  "email_not_found": "Google didn't share an email address, so we couldn't sign you in.",
+  "unable_to_link_account": "We couldn't link Google to your account. Sign in with your password instead.",
+};
+const oauthMessage = (code: string | null) => (code ? (OAUTH_ERRORS[code] ?? "Google sign-in didn't work. Please try again.") : null);
+
 export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
   const router = useRouter();
-  const next = safeNext(useSearchParams().get("next"), "/account");
-  const [error, setError] = useState<string | null>(null);
+  const params = useSearchParams();
+  const next = safeNext(params.get("next"), "/account");
+  const [error, setError] = useState<string | null>(oauthMessage(params.get("error")));
   const [loading, setLoading] = useState(false);
   const signUp = mode === "sign-up";
   const v = useFieldErrors(signUp ? signUpSchema : signInSchema);
@@ -48,7 +60,11 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
   async function onGoogle() {
     setLoading(true);
     setError(null);
-    const { error } = await authClient.signIn.social({ provider: "google", callbackURL: next });
+    const { error } = await authClient.signIn.social({
+      provider: "google",
+      callbackURL: next,
+      errorCallbackURL: `/${mode}?next=${encodeURIComponent(next)}`,
+    });
     if (error) {
       setError(error.message ?? "Google sign-in is unavailable.");
       setLoading(false);
@@ -56,13 +72,29 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
   }
 
   return (
-    <div className="mx-auto max-w-[420px] px-4 py-16">
-      <h1 className="mb-2 text-fs-32 font-medium leading-tight">{signUp ? "Join XBK" : "Sign In"}</h1>
-      <p className="mb-8 text-fs-16 text-mute">{signUp ? "Create an account to check out and track orders." : "Welcome back."}</p>
+    <AuthShell
+      below={
+        <>
+          <p className="text-fs-14 text-mute">
+            {signUp ? "Already have an account?" : "Don't have an account?"}{" "}
+            <Link href={signUp ? `/sign-in?next=${encodeURIComponent(next)}` : `/sign-up?next=${encodeURIComponent(next)}`} className="font-medium text-ink hover:text-charcoal">
+              {signUp ? "Sign in" : "Sign up"}
+            </Link>
+          </p>
+        </>
+      }
+    >
+      <AuthHeader
+        hideTitle
+        title={signUp ? "Sign up to continue" : "Sign in to continue"}
+        subtitle={signUp ? "Sign up to track orders." : "Sign in to make and track orders."}
+      />
       <form onSubmit={onSubmit} noValidate className="space-y-4">
-        {signUp && <Field label="Full name" {...v.props("name")} name="name" placeholder="Full name" autoComplete="name" />}
-        <Field label="Email" {...v.props("email")} name="email" type="email" placeholder="Email" autoComplete="email" />
+        {signUp && <Field filled icon={<User size={18} />} label="Full name" {...v.props("name")} name="name" placeholder="Full name" autoComplete="name" />}
+        <Field filled icon={<Envelope size={18} />} label="Email" {...v.props("email")} name="email" type="email" placeholder="Email" autoComplete="email" />
         <Field
+          filled
+          icon={<Lock size={18} />}
           label="Password"
           {...v.props("password")}
           name="password"
@@ -71,11 +103,14 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
           autoComplete={signUp ? "new-password" : "current-password"}
         />
         {!signUp && (
-          <Link href="/forgot-password" className="block text-fs-14 text-mute underline underline-offset-4">
+          <Link href="/forgot-password" className="block text-fs-14 text-mute hover:text-ink">
             Forgot password?
           </Link>
         )}
         {error && <p role="alert" className="text-fs-14 font-medium text-sale">{error}</p>}
+        <p className="pt-2 text-center text-fs-12 text-mute">
+          {signUp ? "By signing up, you agree to our Terms of Service." : "By signing in, you agree to our Terms of Service."}
+        </p>
         <Button type="submit" size="lg" disabled={loading} className="w-full">
           {loading ? "Please wait…" : signUp ? "Create Account" : "Sign In"}
         </Button>
@@ -89,12 +124,6 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
         <GoogleIcon />
         Continue with Google
       </Button>
-      <p className="mt-6 text-fs-14 text-mute">
-        {signUp ? "Already a member?" : "New to XBK?"}{" "}
-        <Link href={signUp ? `/sign-in?next=${encodeURIComponent(next)}` : `/sign-up?next=${encodeURIComponent(next)}`} className="font-medium text-ink underline underline-offset-4">
-          {signUp ? "Sign in" : "Join us"}
-        </Link>
-      </p>
-    </div>
+    </AuthShell>
   );
 }

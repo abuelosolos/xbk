@@ -1,7 +1,8 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { useId, type ComponentProps, type ReactNode } from "react";
+import { Eye, EyeSlash } from "@phosphor-icons/react";
+import { useEffect, useId, useRef, useState, type ComponentProps, type ReactNode } from "react";
 import { EASE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
@@ -48,22 +49,81 @@ type FieldProps = ComponentProps<"input"> & {
   /** Show the label above the field; otherwise it is screen-reader only and the placeholder leads. */
   labelVisible?: boolean;
   wrapperClassName?: string;
+  /** Small grey icon inside the left edge (auth forms). */
+  icon?: ReactNode;
+  /** Light grey fill, no border (auth forms). */
+  filled?: boolean;
 };
 
-export function Field({ label, error, compact, labelVisible, wrapperClassName, className, name, ...props }: FieldProps) {
+/** Eye button for password inputs: click to reveal, hides again on blur and on form submit. */
+function PasswordInput({ className, onBlur, leading, ...props }: ComponentProps<"input"> & { leading?: ReactNode }) {
+  const id = useId();
+  const ref = useRef<HTMLInputElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const form = ref.current?.form;
+    if (!form) return;
+    const hide = () => setVisible(false);
+    form.addEventListener("submit", hide);
+    return () => form.removeEventListener("submit", hide);
+  }, []);
+
+  return (
+    <span className="relative block">
+      {leading}
+      <input
+        {...props}
+        id={id}
+        ref={ref}
+        type={visible ? "text" : "password"}
+        className={cn(className, "pr-12 [&::-ms-reveal]:hidden")}
+        onBlur={(e) => {
+          // focus moving to the eye button must not hide the text it is about to toggle
+          if (!(e.relatedTarget as HTMLElement | null)?.dataset.passwordToggle) setVisible(false);
+          onBlur?.(e);
+        }}
+      />
+      <button
+        type="button"
+        data-password-toggle
+        aria-label={visible ? "Hide password" : "Show password"}
+        aria-pressed={visible}
+        aria-controls={id}
+        onMouseDown={(e) => e.preventDefault()} // keep the caret in the field
+        onClick={() => setVisible((v) => !v)}
+        className="absolute right-2 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full text-ink transition hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ink"
+      >
+        {visible ? <EyeSlash size={20} aria-hidden /> : <Eye size={20} aria-hidden />}
+      </button>
+    </span>
+  );
+}
+
+export function Field({ label, error, compact, labelVisible, wrapperClassName, className, name, icon, filled, ...props }: FieldProps) {
   const errorId = useId();
+  const controlProps = {
+    name,
+    "data-field": name,
+    "aria-invalid": error ? true : undefined,
+    "aria-describedby": error ? errorId : undefined,
+    className: cn(compact ? fieldCompactClass : fieldClass, filled && "border-transparent bg-cloud", icon && "pl-11", className),
+    ...props,
+  };
+  const leading = icon ? (
+    <span aria-hidden className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-mute">{icon}</span>
+  ) : null;
   return (
     <FieldWrap error={error} id={errorId} className={wrapperClassName}>
       <label className="block">
         <span className={labelVisible ? "mb-1 block text-fs-14 text-mute" : "sr-only"}>{label}</span>
-        <input
-          name={name}
-          data-field={name}
-          aria-invalid={error ? true : undefined}
-          aria-describedby={error ? errorId : undefined}
-          className={cn(compact ? fieldCompactClass : fieldClass, className)}
-          {...props}
-        />
+        {props.type === "password" ? (
+          <PasswordInput {...controlProps} leading={leading} />
+        ) : leading ? (
+          <span className="relative block">{leading}<input {...controlProps} /></span>
+        ) : (
+          <input {...controlProps} />
+        )}
       </label>
     </FieldWrap>
   );

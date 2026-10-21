@@ -4,6 +4,9 @@ import { ProductRow } from "@/components/home/ProductRow";
 import { ProductView } from "@/components/product/ProductView";
 import { getAllProducts, getProductBySlug } from "@/lib/products";
 
+// Admin actions revalidate on change; this is the backstop for anything they miss.
+export const revalidate = 300;
+
 type Params = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {

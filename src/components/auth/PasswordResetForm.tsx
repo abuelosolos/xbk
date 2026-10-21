@@ -4,8 +4,11 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { z } from "zod";
+import { AuthHeader } from "@/components/auth/AuthHeader";
+import { AuthShell } from "@/components/auth/AuthShell";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
+import { Envelope, Lock } from "@phosphor-icons/react";
 import { authClient } from "@/lib/auth-client";
 import { useFieldErrors } from "@/lib/use-field-errors";
 import { email as emailRule, newPassword } from "@/lib/validation";
@@ -49,11 +52,11 @@ export function PasswordResetForm({ mode }: { mode: "request" | "reset" }) {
   }
 
   return (
-    <div className="mx-auto max-w-[420px] px-4 py-16">
-      <h1 className="mb-2 text-fs-32 font-medium leading-tight">{reset ? "Choose a New Password" : "Forgot Password"}</h1>
-      <p className="mb-8 text-fs-16 text-mute">
-        {reset ? "Enter a new password for your account." : "Enter your email and we'll send you a reset link."}
-      </p>
+    <AuthShell below={<Link href="/sign-in" className="text-fs-14 font-medium text-ink hover:text-charcoal">Back to sign in</Link>}>
+      <AuthHeader
+        title={reset ? "Choose a New Password" : "Forgot Password"}
+        subtitle={reset ? "Enter a new password for your account." : "Enter your email and we'll send you a reset link."}
+      />
       {sent ? (
         <p role="status" className="text-fs-16">If an account exists for that email, a reset link is on its way.</p>
       ) : reset && !token ? (
@@ -61,9 +64,9 @@ export function PasswordResetForm({ mode }: { mode: "request" | "reset" }) {
       ) : (
         <form onSubmit={onSubmit} noValidate className="space-y-4">
           {reset ? (
-            <Field label="New password" {...v.props("password")} name="password" type="password" placeholder="Password (8+ characters)" autoComplete="new-password" />
+            <Field filled icon={<Lock size={18} />} label="New password" {...v.props("password")} name="password" type="password" placeholder="Password (8+ characters)" autoComplete="new-password" />
           ) : (
-            <Field label="Email" {...v.props("email")} name="email" type="email" placeholder="Email" autoComplete="email" />
+            <Field filled icon={<Envelope size={18} />} label="Email" {...v.props("email")} name="email" type="email" placeholder="Email" autoComplete="email" />
           )}
           {error && <p role="alert" className="text-fs-14 font-medium text-sale">{error}</p>}
           <Button type="submit" size="lg" disabled={loading} className="w-full">
@@ -71,9 +74,6 @@ export function PasswordResetForm({ mode }: { mode: "request" | "reset" }) {
           </Button>
         </form>
       )}
-      <p className="mt-6 text-fs-14 text-mute">
-        <Link href="/sign-in" className="font-medium text-ink underline underline-offset-4">Back to sign in</Link>
-      </p>
-    </div>
+    </AuthShell>
   );
 }

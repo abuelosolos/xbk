@@ -64,6 +64,13 @@
       "when": 1792577306508,
       "tag": "0008_faulty_famine",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792586477183,
+      "tag": "0009_wise_surge",
+      "breakpoints": true
     }
   ]
 }

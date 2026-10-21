@@ -4,7 +4,7 @@ import { z } from "zod";
 import { adjustStockBy, getProductStock } from "@/lib/products";
 import { requireAdmin } from "@/lib/session";
 import { stockAdjustSchema } from "@/lib/stock";
-import { revalidatePath } from "next/cache";
+import { revalidateCatalogue } from "@/lib/revalidate";
 
 export type StockState = { ok?: boolean; error?: string; stock?: number };
 
@@ -30,11 +30,6 @@ export async function adjustStock(id: string, _prev: StockState, formData: FormD
     return { error: delta < 0 ? `Only ${current} in stock; can't remove ${amount}.` : "That would exceed the maximum stock." };
   }
 
-  revalidatePath(`/product/${row.slug}`);
-  revalidatePath("/shop");
-  revalidatePath("/");
-  revalidatePath("/[hub]", "page");
-  revalidatePath("/admin/inventory");
-  revalidatePath("/admin/products");
+  revalidateCatalogue(row.slug);
   return { ok: true, stock: row.stock };
 }

@@ -12,7 +12,7 @@ import { CheckCircle, Clock, X, XCircle } from "@phosphor-icons/react";
 export type OrderSummary = {
   reference: string;
   email: string;
-  status: "pending" | "paid" | "failed" | "shipped" | "delivered";
+  status: "pending" | "paid" | "failed" | "shipped" | "delivered" | "cancelled";
   subtotalKobo: number;
   shippingFeeKobo: number;
   totalKobo: number;
@@ -22,16 +22,17 @@ export type OrderSummary = {
   delivery: { earliest: string; latest: string };
 };
 
-type State = "success" | "pending" | "failed";
+type State = "success" | "pending" | "failed" | "cancelled";
 
 /** Which result screen an order's stored status maps to. */
 export const resultState = (status: OrderSummary["status"]) =>
-  status === "paid" || status === "shipped" || status === "delivered" ? "success" : status === "pending" ? "pending" : "failed";
+  status === "paid" || status === "shipped" || status === "delivered" ? "success" : status === "pending" ? "pending" : status === "cancelled" ? "cancelled" : "failed";
 
 
 const COPY: Record<State, { title: string; body: string }> = {
   success: { title: "Order confirmed", body: "Thanks, your payment went through. We've emailed your receipt." },
   pending: { title: "Payment pending", body: "We haven't received confirmation from your bank yet. Refresh in a moment." },
+  cancelled: { title: "Order cancelled", body: "This order was cancelled and will be refunded. Check your email for details." },
   failed: { title: "Payment not completed", body: "Your bag is still saved, so you can try again." },
 };
 

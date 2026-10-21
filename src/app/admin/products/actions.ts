@@ -1,14 +1,16 @@
 "use server";
 
-import { del } from "@vercel/blob";
 import { randomUUID } from "node:crypto";
-import { and, eq, ne } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { and, eq, inArray, ne } from "drizzle-orm";
+import { revalidateCatalogue } from "@/lib/revalidate";
 import { z } from "zod";
 import { getDb } from "@/db";
 import { categories, orderItems, products, stockMovements, subcategories } from "@/db/schema";
 import { requireAdmin } from "@/lib/session";
-import { MAX_PHOTOS, uploadPhotos } from "@/lib/uploads";
+import { MAX_PHOTOS, deleteBlobs, parsePhotoUrls } from "@/lib/uploads";
+import { scaleKobo } from "@/lib/pricing";
+import { adjustStockBy } from "@/lib/products";
+import { MAX_STOCK } from "@/lib/stock";
 import { fieldErrors } from "@/lib/validation";
 import { productSchema, productUpdateSchema } from "./schema";
 
@@ -61,17 +63,8 @@ function parseForm<S extends typeof productSchema | typeof productUpdateSchema>(
   const raw = Object.fromEntries(formData);
   const values = Object.fromEntries(Object.entries(raw).filter(([, v]) => typeof v === "string")) as Record<string, string>;
   if (raw.saleNaira === "") delete raw.saleNaira;
-  delete raw.photos; // files are read separately
-  delete raw.keep;
+  delete raw.photo; // photo URLs are read separately
   return { values, parsed: schema.safeParse(raw) as ReturnType<S["safeParse"]> };
-}
-
-function revalidateCatalogue(slug: string) {
-  revalidatePath("/shop");
-  revalidatePath("/");
-  revalidatePath("/[hub]", "page");
-  revalidatePath(`/product/${slug}`);
-  revalidatePath("/admin/products");
 }
 
 export async function createProduct(_prev: ProductFormState, formData: FormData): Promise<ProductFormState> {
@@ -88,12 +81,8 @@ export async function createProduct(_prev: ProductFormState, formData: FormData)
   const ids = await resolveCategory(input);
   if ("errors" in ids) return { errors: ids.errors, values };
 
-  let images: string[];
-  try {
-    images = await uploadPhotos(formData.getAll("photos"), input.slug);
-  } catch (err) {
-    return { errors: { photos: err instanceof Error ? err.message : "Couldn't upload the photos." }, values };
-  }
+  const images = parsePhotoUrls(formData.getAll("photo"));
+  if (images.length > MAX_PHOTOS) return { errors: { photos: `A product can have at most ${MAX_PHOTOS} photos.` }, values };
 
   // product + its opening-stock movement succeed or fail together (batch = one implicit transaction)
   const id = randomUUID();
@@ -123,22 +112,15 @@ export async function updateProduct(id: string, _prev: ProductFormState, formDat
   const ids = await resolveCategory(input);
   if ("errors" in ids) return { errors: ids.errors, values };
 
-  // Only photos this product already has can be kept; anything else submitted is ignored.
-  const kept = formData.getAll("keep").filter((u): u is string => typeof u === "string" && current.images.includes(u));
-  let added: string[];
-  try {
-    added = await uploadPhotos(formData.getAll("photos"), input.slug);
-  } catch (err) {
-    return { errors: { photos: err instanceof Error ? err.message : "Couldn't upload the photos." }, values };
-  }
-  if (kept.length + added.length > MAX_PHOTOS) return { errors: { photos: `A product can have at most ${MAX_PHOTOS} photos.` }, values };
+  const images = parsePhotoUrls(formData.getAll("photo"), current.images);
+  if (images.length > MAX_PHOTOS) return { errors: { photos: `A product can have at most ${MAX_PHOTOS} photos.` }, values };
 
   await db
     .update(products)
-    .set({ ...toRow(input, ids), images: [...kept, ...added], updatedAt: new Date() })
+    .set({ ...toRow(input, ids), images, updatedAt: new Date() })
     .where(eq(products.id, id));
-  revalidateCatalogue(input.slug);
-  if (current.slug !== input.slug) revalidatePath(`/product/${current.slug}`);
+  await deleteBlobs(current.images.filter((u) => !images.includes(u))); // photos removed in this edit
+  revalidateCatalogue([input.slug, current.slug]);
   return { ok: true };
 }
 
@@ -190,14 +172,61 @@ export async function deleteProduct(_prev: ProductActionState, formData: FormDat
   }
 
   // The row is gone; a photo clean-up failure must not turn that into an error.
-  const blobs = product.images.filter((u) => u.includes("blob.vercel-storage.com"));
-  if (blobs.length && process.env.BLOB_READ_WRITE_TOKEN) {
-    try {
-      await del(blobs);
-    } catch (err) {
-      console.error("Deleting product photos failed", err);
-    }
-  }
+  await deleteBlobs(product.images);
   revalidateCatalogue(product.slug);
   return { ok: true };
+}
+
+export type BulkState = { ok?: boolean; error?: string; message?: string };
+
+const bulkSchema = z.object({
+  ids: z.array(z.string().uuid()).min(1, "Select at least one product.").max(200, "Select at most 200 products."),
+  percent: z.string().trim().regex(/^-?\d{1,3}(\.\d{1,2})?$/, "Enter a percentage like -10 or 5.5.").optional(),
+  addStock: z.string().trim().regex(/^\d+$/, "Stock to add must be a whole number.").optional(),
+});
+
+/** Price change by a percentage (sale prices move with it) and/or stock added to every selected product. */
+export async function bulkEditProducts(_prev: BulkState, formData: FormData): Promise<BulkState> {
+  const { user } = await requireAdmin("/admin/products");
+  const parsed = bulkSchema.safeParse({
+    ids: formData.getAll("ids"),
+    percent: String(formData.get("percent") ?? "") || undefined,
+    addStock: String(formData.get("addStock") ?? "") || undefined,
+  });
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Check the details." };
+  const { ids, percent, addStock } = parsed.data;
+  if (percent === undefined && addStock === undefined) return { error: "Enter a price change, stock to add, or both." };
+  const add = addStock === undefined ? 0 : Number(addStock);
+  if (addStock !== undefined && (add < 1 || add > MAX_STOCK)) return { error: "Stock to add must be between 1 and 1,000,000." };
+
+  const db = getDb();
+  const rows = await db
+    .select({ id: products.id, name: products.name, slug: products.slug, price: products.priceKobo, sale: products.salePriceKobo })
+    .from(products)
+    .where(inArray(products.id, ids));
+  if (rows.length === 0) return { error: "Those products no longer exist." };
+
+  if (percent !== undefined) {
+    const pct = Number(percent);
+    if (pct < -90 || pct > 500) return { error: "Choose a percentage between -90 and 500." };
+    const updates = [];
+    for (const r of rows) {
+      const price = scaleKobo(r.price, pct);
+      const sale = r.sale === null ? null : scaleKobo(r.sale, pct);
+      if (price === null || (r.sale !== null && sale === null)) return { error: `${r.name}: that change would make the price invalid. Nothing was changed.` };
+      updates.push(db.update(products).set({ priceKobo: price, salePriceKobo: sale, updatedAt: new Date() }).where(eq(products.id, r.id)));
+    }
+    await db.batch(updates as [(typeof updates)[number], ...(typeof updates)[number][]]); // all or nothing
+  }
+
+  let skipped = 0;
+  if (add > 0) {
+    for (const r of rows) {
+      if (!(await adjustStockBy(r.id, add, { reason: "restock", actorId: user.id, note: "Bulk restock" }))) skipped++;
+    }
+  }
+
+  revalidateCatalogue(rows.map((r) => r.slug));
+  const parts = [percent !== undefined && `price ${Number(percent) > 0 ? "+" : ""}${Number(percent)}%`, add > 0 && `+${add} stock`].filter(Boolean).join(", ");
+  return { ok: true, message: `Updated ${rows.length} product${rows.length === 1 ? "" : "s"} (${parts}).${skipped ? ` ${skipped} stock change${skipped === 1 ? "" : "s"} skipped (over the maximum).` : ""}` };
 }

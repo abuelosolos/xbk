@@ -12,6 +12,9 @@ import { getAllProducts, getCategories } from "@/lib/products";
 export const dynamicParams = false;
 export const generateStaticParams = () => HUBS.map((h) => ({ hub: h.slug }));
 
+// Admin actions revalidate on change; this is the backstop for anything they miss.
+export const revalidate = 300;
+
 type Params = Promise<{ hub: string }>;
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {

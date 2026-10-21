@@ -24,6 +24,7 @@ export function SecuritySection() {
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [needsFresh, setNeedsFresh] = useState(false);
   const [passwordError, setPasswordError] = useState<string | undefined>();
 
   const load = async () => {
@@ -65,6 +66,8 @@ export function SecuritySection() {
     setError(null);
     const { error } = await authClient.deleteUser(hasPassword ? { password } : {});
     if (error) {
+      // Older sessions can't delete without proof it's still you; a password does that, Google users sign in again.
+      setNeedsFresh(!hasPassword && /expired/i.test(`${error.code ?? ""} ${error.message ?? ""}`));
       setError(error.message ?? "Couldn't delete your account.");
       setBusy(false);
       return;
@@ -135,7 +138,16 @@ export function SecuritySection() {
                 autoComplete="current-password"
               />
             )}
-            {error && <p role="alert" className="text-fs-14 font-medium text-sale">{error}</p>}
+            {error && <p role="alert" className="text-fs-14 font-medium text-sale">{needsFresh ? "For your security, sign in with Google again, then delete your account." : error}</p>}
+            {needsFresh && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => authClient.signIn.social({ provider: "google", callbackURL: "/account?tab=settings&section=privacy" })}
+              >
+                Sign in with Google again
+              </Button>
+            )}
             <div className="flex gap-3">
               <Button type="submit" disabled={busy}>{busy ? "Deleting…" : "Permanently Delete"}</Button>
               <Button type="button" variant="secondary" onClick={() => setConfirming(false)}>Cancel</Button>

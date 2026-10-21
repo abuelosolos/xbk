@@ -18,10 +18,10 @@ export type OrderRow = {
   name: string;
   image: string | null;
   total: string;
-  status: "pending" | "paid" | "failed" | "shipped" | "delivered";
+  status: "pending" | "paid" | "failed" | "shipped" | "delivered" | "cancelled";
 };
 
-const TABS = ["all", "pending", "paid", "shipped", "delivered"] as const;
+const TABS = ["all", "pending", "paid", "shipped", "delivered", "cancelled"] as const;
 
 export function OrdersPanel({ orders }: { orders: OrderRow[] }) {
   const [tab, setTab] = useState<(typeof TABS)[number]>("all");
@@ -65,12 +65,12 @@ export function OrdersPanel({ orders }: { orders: OrderRow[] }) {
           </Link>
         </div>
       ) : (
-        <ul className="divide-y divide-hairline-soft">
+        <ul className="-mx-4 max-h-[352px] divide-y divide-hairline-soft overflow-y-auto px-4 md:-mx-6 md:max-h-[384px] md:px-6">
           {shown.map((o) => (
             <li key={o.id}>
               <Link
                 href={`/account/orders/${o.reference}`}
-                className="-mx-4 flex items-center justify-between gap-4 px-4 py-4 transition hover:bg-cloud md:-mx-6 md:px-6"
+                className="flex items-center justify-between gap-4 py-4 transition hover:bg-cloud"
               >
                 <div className="flex min-w-0 items-center gap-4">
                   <FramedImage src={o.image} label={o.name} sizes="64px" className="size-14 shrink-0 rounded-[6px] md:size-16" />

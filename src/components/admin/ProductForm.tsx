@@ -1,25 +1,15 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { upload } from "@vercel/blob/client";
+import { useActionState, useEffect, useState } from "react";
 import { createProduct, updateProduct, type ProductFormState } from "@/app/admin/products/actions";
 import { CategoryFields } from "@/components/admin/CategoryFields";
 import { Button } from "@/components/ui/Button";
 import { Field, FieldWrap, fieldCompactClass } from "@/components/ui/Field";
 import type { Category, Product } from "@/lib/types";
+import { MAX_PHOTOS, photoFileProblem } from "@/lib/uploads-config";
 
-const MAX_PHOTOS = 6;
-const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
-const PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"];
-
-function photoProblem(files: FileList | null) {
-  if (!files || files.length === 0) return undefined;
-  if (files.length > MAX_PHOTOS) return `Choose at most ${MAX_PHOTOS} photos.`;
-  for (const f of Array.from(files)) {
-    if (!PHOTO_TYPES.includes(f.type)) return `${f.name}: use a JPEG, PNG or WebP image.`;
-    if (f.size > MAX_PHOTO_BYTES) return `${f.name}: must be under 5 MB.`;
-  }
-  return undefined;
-}
+const photoButton = "h-8 rounded-pill bg-cloud px-3 text-fs-12 font-medium disabled:opacity-40";
 
 /** Create form, or the edit form when `product` is given. */
 export function ProductForm({ categories, product }: { categories: Category[]; product?: Product }) {
@@ -32,11 +22,54 @@ export function ProductForm({ categories, product }: { categories: Category[]; p
         badge: product.badge ?? "", description: product.description,
       }
     : {};
+  // Photos upload straight to Blob as soon as they are chosen; the form submits only their URLs, in order.
+  const [photos, setPhotos] = useState<string[]>(product?.images ?? []);
+  const [uploading, setUploading] = useState<Record<string, number>>({}); // file name → percent
   const [photoError, setPhotoError] = useState<string | undefined>();
   const e = state.errors ?? {};
   const v = state.values ?? initial;
   // changes whenever a result comes back, so fields re-read their defaultValue after the form resets
   const key = state.ok ? "saved" : JSON.stringify(state.errors ?? {});
+  const busy = Object.keys(uploading).length > 0;
+
+  useEffect(() => {
+    if (state.ok && !product) setPhotos([]);
+  }, [state.ok, product]);
+
+  async function addFiles(list: FileList | null) {
+    const files = Array.from(list ?? []);
+    if (files.length === 0) return;
+    if (photos.length + files.length > MAX_PHOTOS) return setPhotoError(`A product can have at most ${MAX_PHOTOS} photos.`);
+    const problem = files.map(photoFileProblem).find(Boolean);
+    if (problem) return setPhotoError(problem);
+    setPhotoError(undefined);
+    const results = await Promise.all(
+      files.map(async (f) => {
+        setUploading((u) => ({ ...u, [f.name]: 0 }));
+        try {
+          const blob = await upload(`products/${f.name}`, f, {
+            access: "public",
+            handleUploadUrl: "/admin/blob-upload",
+            onUploadProgress: ({ percentage }) => setUploading((u) => ({ ...u, [f.name]: Math.round(percentage) })),
+          });
+          return { url: blob.url };
+        } catch (err) {
+          return { error: `${f.name}: ${err instanceof Error ? err.message : "upload failed."}` };
+        } finally {
+          setUploading(({ [f.name]: _done, ...rest }) => rest);
+        }
+      }),
+    );
+    setPhotos((p) => [...p, ...results.flatMap((r) => ("url" in r && r.url ? [r.url] : []))]);
+    setPhotoError(results.find((r) => "error" in r)?.error);
+  }
+
+  const move = (i: number, by: -1 | 1) =>
+    setPhotos((p) => {
+      const next = [...p];
+      [next[i], next[i + by]] = [next[i + by], next[i]];
+      return next;
+    });
 
   return (
     <form
@@ -44,9 +77,10 @@ export function ProductForm({ categories, product }: { categories: Category[]; p
       action={action}
       noValidate
       onSubmit={(ev) => {
-        const problem = photoProblem(ev.currentTarget.photos.files);
-        setPhotoError(problem);
-        if (problem) ev.preventDefault();
+        if (busy) {
+          setPhotoError("Wait for the photos to finish uploading.");
+          ev.preventDefault();
+        }
       }}
       className="grid max-w-2xl gap-3 sm:grid-cols-2"
     >
@@ -76,37 +110,50 @@ export function ProductForm({ categories, product }: { categories: Category[]; p
         <Field compact label="Stock" name="stock" inputMode="numeric" defaultValue={v.stock ?? "0"} error={e.stock} placeholder="Stock" />
       )}
       <Field compact label="Badge" name="badge" defaultValue={v.badge} placeholder="Badge (optional)" />
-      {product && product.images.length > 0 && (
-        <fieldset className="sm:col-span-2">
-          <legend className="mb-1 text-fs-14 text-mute">Current photos (untick to remove)</legend>
-          <div className="flex flex-wrap gap-3">
-            {product.images.map((url) => (
-              <label key={url} className="block text-center text-fs-12 text-mute">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={url} alt="" className="size-20 bg-cloud object-cover" />
-                <input type="checkbox" name="keep" value={url} defaultChecked className="mt-1 size-4 accent-ink" />
-              </label>
-            ))}
-          </div>
-        </fieldset>
-      )}
+      {photos.map((url) => (
+        <input key={url} type="hidden" name="photo" value={url} />
+      ))}
       <FieldWrap error={photoError ?? e.photos} className="sm:col-span-2">
-        <label className="block text-fs-14 text-mute">
-          Photos (JPEG, PNG or WebP, up to 6 images, 5 MB each; the first is the main image)
+        <div className="block text-fs-14 text-mute">
+          Photos (JPEG, PNG or WebP, up to {MAX_PHOTOS} images, 5 MB each; the first is the main image)
+          {photos.length > 0 && (
+            <ul className="my-2 flex flex-wrap gap-3">
+              {photos.map((url, i) => (
+                <li key={url} className="text-center text-fs-12">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt="" className="size-20 bg-cloud object-cover" />
+                  <span className="mt-1 block text-mute">{i === 0 ? "Main" : `#${i + 1}`}</span>
+                  <span className="mt-1 flex justify-center gap-1">
+                    <button type="button" className={photoButton} disabled={i === 0} onClick={() => move(i, -1)} aria-label={`Move photo ${i + 1} earlier`}>←</button>
+                    <button type="button" className={photoButton} disabled={i === photos.length - 1} onClick={() => move(i, 1)} aria-label={`Move photo ${i + 1} later`}>→</button>
+                    <button type="button" className={photoButton} onClick={() => setPhotos((p) => p.filter((u) => u !== url))} aria-label={`Remove photo ${i + 1}`}>✕</button>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
           <input
-            name="photos"
             type="file"
             accept="image/jpeg,image/png,image/webp"
             multiple
-            onChange={(ev) => setPhotoError(photoProblem(ev.currentTarget.files))}
+            disabled={photos.length >= MAX_PHOTOS}
+            onChange={(ev) => {
+              void addFiles(ev.currentTarget.files);
+              ev.currentTarget.value = "";
+            }}
             className="mt-1 block w-full text-fs-14 text-ink file:mr-3 file:h-9 file:rounded-pill file:border-0 file:bg-cloud file:px-4 file:text-fs-14 file:font-medium"
           />
-        </label>
+        </div>
+        {busy && (
+          <p role="status" className="mt-1 text-fs-14 text-mute">
+            Uploading {Object.entries(uploading).map(([name, pct]) => `${name} ${pct}%`).join(", ")}…
+          </p>
+        )}
       </FieldWrap>
       <textarea name="description" rows={3} defaultValue={v.description} aria-label="Description" placeholder="Description" className={`${fieldCompactClass} h-auto py-3 sm:col-span-2`} />
       {e.category && <p role="alert" className="text-fs-14 font-medium text-sale sm:col-span-2">{e.category}</p>}
       <div className="flex items-center gap-4 sm:col-span-2">
-        <Button type="submit" disabled={pending}>{pending ? "Saving…" : product ? "Save changes" : "Create product"}</Button>
+        <Button type="submit" disabled={pending || busy}>{pending ? "Saving…" : product ? "Save changes" : "Create product"}</Button>
         {state.ok && <p role="status" className="text-fs-14 font-medium text-success">{product ? "Changes saved." : "Product created."}</p>}
       </div>
     </form>

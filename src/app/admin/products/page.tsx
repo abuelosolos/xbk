@@ -1,5 +1,6 @@
 import { inArray } from "drizzle-orm";
 import Link from "next/link";
+import { BulkEditForm } from "@/components/admin/BulkEditForm";
 import { ProductRowActions } from "@/components/admin/ProductRowActions";
 import { getDb, hasDb } from "@/db";
 import { orderItems } from "@/db/schema";
@@ -36,11 +37,13 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
         ))}
       </nav>
 
+      {!showArchived && products.length > 0 && <BulkEditForm />}
       {products.length === 0 && <p className="text-fs-16 text-mute">{showArchived ? "No archived products." : "No products yet."}</p>}
       <div className="overflow-x-auto">
         <table className="w-full text-left text-fs-14">
           <thead className="border-b border-hairline text-mute">
             <tr>
+              <th className="w-8 py-3 pr-2" />
               <th className="py-3 pr-4 font-medium">Name</th>
               <th className="py-3 pr-4 font-medium">Category</th>
               <th className="py-3 pr-4 font-medium">Price</th>
@@ -51,6 +54,9 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
           <tbody className="divide-y divide-hairline-soft">
             {products.map((p) => (
               <tr key={p.id}>
+                <td className="py-3 pr-2">
+                  {!p.archived && <input type="checkbox" name="ids" value={p.id} form="bulk-edit" aria-label={`Select ${p.name}`} className="size-4 accent-ink" />}
+                </td>
                 <td className="py-3 pr-4 font-medium">{p.name}{p.archived && <span className="ml-2 text-fs-12 font-normal text-mute">Archived</span>}</td>
                 <td className="py-3 pr-4">
                   {category(p.category)?.name ?? p.category}
