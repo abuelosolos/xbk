@@ -26,8 +26,9 @@ const CDN: Record<string, string> = {
   "WAAkGFbZUus": "photo-1762709753393-a2937622949e",
 };
 
+/** An Unsplash id, or a file in `public/` when given a path starting with "/" (returned untouched). */
 export const unsplash = (id: string, width = 1200) =>
-  `https://images.unsplash.com/${CDN[id] ?? `photo-${id}`}?auto=format&fit=crop&q=80&w=${width}`;
+  id.startsWith("/") ? id : `https://images.unsplash.com/${CDN[id] ?? `photo-${id}`}?auto=format&fit=crop&q=80&w=${width}`;
 
 /** Unsplash photo ids already used by the demo catalogue, keyed by sub-category then category. */
 const PREVIEW: Record<string, string[]> = {

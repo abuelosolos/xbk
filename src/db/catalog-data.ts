@@ -13,6 +13,7 @@ export const CATEGORIES: Category[] = [
       { slug: "running", name: "Running" },
       { slug: "training", name: "Training & Gym" },
       { slug: "lifestyle", name: "Lifestyle" },
+      { slug: "boots", name: "Boots" },
     ],
   },
   {
@@ -24,6 +25,7 @@ export const CATEGORIES: Category[] = [
       { slug: "shorts", name: "Shorts" },
       { slug: "leggings", name: "Leggings & Tights" },
       { slug: "jackets", name: "Jackets & Outerwear" },
+      { slug: "knitwear", name: "Knitwear" },
     ],
   },
   {
@@ -32,6 +34,8 @@ export const CATEGORIES: Category[] = [
     subcategories: [
       { slug: "bags", name: "Bags & Backpacks" },
       { slug: "socks", name: "Socks" },
+      { slug: "caps", name: "Caps & Hats" },
+      { slug: "belts", name: "Belts" },
     ],
   },
 ];

@@ -14,7 +14,7 @@ import {
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
-import type { Gender } from "@/lib/types";
+import type { Gender, ProductColor } from "@/lib/types";
 
 /* ───────────── Better Auth tables ───────────── */
 
@@ -132,7 +132,7 @@ export const products = pgTable(
     priceKobo: integer("price_kobo").notNull(),
     salePriceKobo: integer("sale_price_kobo"),
     colors: jsonb("colors")
-      .$type<{ name: string; hex: string }[]>()
+      .$type<ProductColor[]>()
       .notNull()
       .default([]),
     sizes: jsonb("sizes").$type<string[]>().notNull().default([]),

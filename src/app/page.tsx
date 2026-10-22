@@ -28,6 +28,15 @@ export default async function HomePage() {
   const products = await getAllProducts();
   const trending = products.slice(0, 6);
   const clothing = products.filter((p) => p.category === "clothing").slice(0, 4);
+  const stocked = products.filter((p) => p.stock > 0);
+  const inSub = (category: string, sub: string) => stocked.some((p) => p.category === category && p.subcategory === sub);
+  const outOfStock = [
+    ...(stocked.some((p) => p.category === "footwear") ? [] : ["/footwear"]),
+    ...(inSub("clothing", "jackets") ? [] : ["/shop?category=clothing&type=jackets"]),
+    ...(stocked.some((p) => p.category === "accessories") ? [] : ["/accessories"]),
+    ...(inSub("clothing", "hoodies") ? [] : ["/shop?category=clothing&type=hoodies"]),
+    ...(stocked.some((p) => p.salePriceKobo !== null) ? [] : ["/sale"]),
+  ];
 
   return (
     <>
@@ -37,8 +46,8 @@ export default async function HomePage() {
         <Reveal>
           <section className="grid gap-2 md:grid-cols-2">
             {[
-              { title: "Run", sub: "Road and trail, built light.", href: "/footwear", photo: "Or4_-uT-S5c" },
-              { title: "Train", sub: "Layers that keep up.", href: "/clothing", photo: "1eJ9cG97BD8" },
+              { title: "Sneakers", sub: "Suede and leather courts on a gum sole.", href: "/shop?category=footwear&type=lifestyle", photo: "/xbk-court-sneaker-black.jpg" },
+              { title: "Jackets", sub: "Bombers, puffers and layers that keep up.", href: "/shop?category=clothing&type=jackets", photo: "/xbk-puffer-jacket-off-white.jpg" },
             ].map((tile) => (
               <div key={tile.title} className="group relative isolate flex aspect-[4/3] items-end overflow-hidden bg-ink p-6 text-white lg:p-10">
                 <Image
@@ -68,7 +77,7 @@ export default async function HomePage() {
 
         <section>
           <Reveal><SectionHeading>Shop by Category</SectionHeading></Reveal>
-          <CategoryRail />
+          <CategoryRail outOfStock={outOfStock} />
         </section>
 
         {clothing.length > 0 && (

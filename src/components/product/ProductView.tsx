@@ -1,5 +1,6 @@
 "use client";
 
+import { galleryFor } from "@/lib/colors";
 import { AnimatePresence, motion, useAnimationControls } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { FramedImage } from "@/components/product/FramedImage";
@@ -42,7 +43,8 @@ export function ProductView({ product }: { product: Product }) {
     return () => io.disconnect();
   }, []);
 
-  const views = product.images.length ? product.images : [null, null, null, null];
+  const gallery = galleryFor(product, colorIdx);
+  const views = gallery.length ? gallery : [null, null, null, null];
   const color = product.colors[colorIdx];
   const unit = product.salePriceKobo ?? product.priceKobo;
   const onSale = product.salePriceKobo !== null;
@@ -60,7 +62,7 @@ export function ProductView({ product }: { product: Product }) {
       slug: product.slug,
       name: product.name,
       subtitle: product.subtitle,
-      image: product.images[0] ?? null,
+      image: gallery[0] ?? null,
       unitPriceKobo: unit,
       size,
       color: color?.name ?? "",
@@ -142,7 +144,10 @@ export function ProductView({ product }: { product: Product }) {
             <ul className="flex flex-wrap gap-3">
               {product.colors.map((c, i) => (
                 <li key={c.name} className="relative">
-                  <button type="button" aria-label={c.name} aria-pressed={colorIdx === i} onClick={() => setColorIdx(i)} className="relative block size-10 rounded-full p-[3px] transition active:scale-90">
+                  <button type="button" aria-label={c.name} aria-pressed={colorIdx === i} onClick={() => {
+                    setColorIdx(i);
+                    setView(0);
+                  }} className="relative block size-10 rounded-full p-[3px] transition active:scale-90">
                     <span className="block size-full rounded-full ring-1 ring-hairline" style={{ backgroundColor: c.hex }} />
                     {colorIdx === i && (
                       <motion.span layoutId="swatch-ring" className="absolute inset-0 rounded-full ring-2 ring-ink" transition={{ duration: 0.3, ease: EASE }} />

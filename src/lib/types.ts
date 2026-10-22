@@ -1,4 +1,4 @@
-export type Gender = "men" | "women" | "kids" | "unisex";
+export type Gender = "men" | "women" | "unisex";
 
 export interface Subcategory {
   slug: string;
@@ -17,6 +17,8 @@ export interface Category {
 export interface ProductColor {
   name: string;
   hex: string;
+  /** Photos shown when this colour is picked (lib/colors.ts galleryFor); without them the product's own photos show. */
+  images?: string[];
 }
 
 export interface Product {

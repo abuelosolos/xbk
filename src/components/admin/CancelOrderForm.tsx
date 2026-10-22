@@ -1,18 +1,20 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { cancelOrder, type OrderActionState } from "@/app/admin/orders/actions";
+import { ConfirmDialog } from "@/components/admin/ui/ConfirmDialog";
 import { Button } from "@/components/ui/Button";
 import { fieldCompactClass } from "@/components/ui/Field";
 
 /** Cancels a paid or shipped order, returns its items to stock and optionally tells the customer. */
 export function CancelOrderForm({ orderId, defaultMessage }: { orderId: string; defaultMessage: string }) {
   const [open, setOpen] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
   const [state, formAction, pending] = useActionState<OrderActionState, FormData>(cancelOrder.bind(null, orderId), {});
 
   if (!open) return <Button type="button" variant="outline" onClick={() => setOpen(true)}>Cancel order</Button>;
   return (
-    <form action={formAction} className="grid max-w-2xl gap-3">
+    <form ref={formRef} action={formAction} className="grid max-w-2xl gap-3">
       <p className="text-fs-14 text-mute">
         The items go back into stock. Issue the refund in the Paystack dashboard and note its reference below.
       </p>
@@ -25,7 +27,13 @@ export function CancelOrderForm({ orderId, defaultMessage }: { orderId: string; 
       {state.error && <p role="alert" className="text-fs-14 font-medium text-sale">{state.error}</p>}
       {state.ok && <p role="status" className="text-fs-14 font-medium text-success">Order cancelled and restocked. {state.emailed ? "Customer emailed." : "No email sent."}</p>}
       <div className="flex gap-3">
-        <Button type="submit" disabled={pending}>{pending ? "Cancelling…" : "Confirm cancellation"}</Button>
+        <ConfirmDialog
+          title="Cancel this order?"
+          body="The items return to stock and this can't be undone. Remember to refund the payment in Paystack."
+          confirmLabel="Cancel order"
+          onConfirm={() => formRef.current?.requestSubmit()}
+          trigger={(openDialog) => <Button type="button" disabled={pending} onClick={openDialog}>{pending ? "Cancelling…" : "Cancel this order"}</Button>}
+        />
         <Button type="button" variant="secondary" onClick={() => setOpen(false)}>Keep order</Button>
       </div>
     </form>
