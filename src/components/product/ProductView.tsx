@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { galleryFor } from "@/lib/colors";
 import { AnimatePresence, motion, useAnimationControls } from "motion/react";
 import { useEffect, useRef, useState } from "react";
@@ -12,6 +13,27 @@ import { cn, formatNaira } from "@/lib/utils";
 import { useCart } from "@/store/cart";
 import { useUI } from "@/store/ui";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
+
+function ProductHeading({ product }: { product: Product }) {
+  const onSale = product.salePriceKobo !== null;
+  return (
+    <>
+      {product.badge && <p className="text-fs-16 font-medium text-sale">{product.badge}</p>}
+      <h1 className="text-fs-32 font-medium leading-tight">{product.name}</h1>
+      <p className="text-fs-16 text-charcoal">{product.subtitle}</p>
+      <p className="mt-3 flex items-baseline gap-3 text-fs-24 font-medium">
+        {onSale ? (
+          <>
+            <span className="text-sale">{formatNaira(product.salePriceKobo!)}</span>
+            <span className="text-fs-16 text-mute line-through">{formatNaira(product.priceKobo)}</span>
+          </>
+        ) : (
+          formatNaira(product.priceKobo)
+        )}
+      </p>
+    </>
+  );
+}
 
 export function ProductView({ product }: { product: Product }) {
   const add = useCart((s) => s.add);
@@ -47,11 +69,13 @@ export function ProductView({ product }: { product: Product }) {
   const views = gallery.length ? gallery : [null, null, null, null];
   const color = product.colors[colorIdx];
   const unit = product.salePriceKobo ?? product.priceKobo;
-  const onSale = product.salePriceKobo !== null;
   const soldOut = product.stock <= 0;
+  // one size only (caps, belts): nothing to pick
+  const onlySize = product.sizes.length === 1 ? product.sizes[0] : null;
 
   function addToBag() {
-    if (!size) {
+    const chosen = onlySize ?? size;
+    if (!chosen) {
       setError(true);
       sizeRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       shake.start({ x: [0, -8, 8, -5, 5, 0], transition: { duration: 0.4 } });
@@ -64,7 +88,7 @@ export function ProductView({ product }: { product: Product }) {
       subtitle: product.subtitle,
       image: gallery[0] ?? null,
       unitPriceKobo: unit,
-      size,
+      size: chosen,
       color: color?.name ?? "",
     });
     setAdded(true);
@@ -74,6 +98,9 @@ export function ProductView({ product }: { product: Product }) {
 
   return (
     <div className="mx-auto grid max-w-[1440px] gap-8 px-4 pt-6 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-12 lg:px-24 lg:pt-8">
+      {/* on phones the name and price sit above the photos */}
+      <div className="lg:hidden"><ProductHeading product={product} /></div>
+
       {/* gallery */}
       <div className="flex flex-col-reverse gap-2 lg:flex-row">
         <ul className="flex gap-2 overflow-x-auto lg:max-h-[calc(100dvh-8rem)] lg:flex-col lg:overflow-y-auto lg:overflow-x-visible [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -85,7 +112,7 @@ export function ProductView({ product }: { product: Product }) {
                 aria-current={view === i}
                 onMouseEnter={() => setView(i)}
                 onClick={() => setView(i)}
-                className={cn("block size-16 shrink-0 overflow-hidden rounded-lg transition lg:size-[60px]", view === i ? "ring-2 ring-ink" : "opacity-70 hover:opacity-100")}
+                className={cn("block size-16 shrink-0 overflow-hidden transition lg:rounded-lg lg:size-[60px]", view === i ? "ring-2 ring-ink" : "opacity-70 hover:opacity-100")}
               >
                 <FramedImage src={src} label={`${product.name} view ${i + 1}`} className="size-full" sizes="96px" />
               </button>
@@ -101,7 +128,21 @@ export function ProductView({ product }: { product: Product }) {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.25, ease: EASE }}
             >
-              <FramedImage src={views[view]} label={product.name} className="aspect-square rounded-lg lg:aspect-[4/5]" priority sizes="(min-width:1024px) 60vw, 100vw" />
+              {views[view] ? (
+                <div className="bg-cloud lg:aspect-[4/5] lg:overflow-hidden lg:rounded-lg">
+                  <Image
+                    src={views[view]!}
+                    alt={product.name}
+                    width={0}
+                    height={0}
+                    priority
+                    sizes="(min-width:1024px) 60vw, 100vw"
+                    className="block h-auto w-full mix-blend-multiply lg:h-full lg:object-cover"
+                  />
+                </div>
+              ) : (
+                <FramedImage src={null} label={product.name} className="aspect-square lg:aspect-[4/5] lg:rounded-lg" />
+              )}
             </motion.div>
           </AnimatePresence>
           {views.length > 1 && (
@@ -124,19 +165,7 @@ export function ProductView({ product }: { product: Product }) {
 
       {/* details */}
       <div className="lg:sticky lg:top-24 lg:self-start">
-        {product.badge && <p className="text-fs-16 font-medium text-sale">{product.badge}</p>}
-        <h1 className="text-fs-32 font-medium leading-tight">{product.name}</h1>
-        <p className="text-fs-16 text-charcoal">{product.subtitle}</p>
-        <p className="mt-3 flex items-baseline gap-3 text-fs-24 font-medium">
-          {onSale ? (
-            <>
-              <span className="text-sale">{formatNaira(product.salePriceKobo!)}</span>
-              <span className="text-fs-16 text-mute line-through">{formatNaira(product.priceKobo)}</span>
-            </>
-          ) : (
-            formatNaira(product.priceKobo)
-          )}
-        </p>
+        <div className="hidden lg:block"><ProductHeading product={product} /></div>
 
         {product.colors.length > 0 && (
           <div className="mt-8">
@@ -159,7 +188,7 @@ export function ProductView({ product }: { product: Product }) {
           </div>
         )}
 
-        <motion.div ref={sizeRef} animate={shake} className="mt-8 scroll-mt-24">
+        {!onlySize && <motion.div ref={sizeRef} animate={shake} className="mt-8 scroll-mt-24">
           <div className="mb-3 flex items-center justify-between">
             <p className={cn("text-fs-16 font-medium", error && "text-sale")}>{error ? "Please select a size" : "Select Size"}</p>
           </div>
@@ -179,7 +208,7 @@ export function ProductView({ product }: { product: Product }) {
               </button>
             ))}
           </div>
-        </motion.div>
+        </motion.div>}
 
         <div ref={ctaRef} className="mt-6 flex flex-col gap-3">
           <Button size="lg" disabled={soldOut} onClick={addToBag} className="w-full">
@@ -191,8 +220,9 @@ export function ProductView({ product }: { product: Product }) {
           </Button>
         </div>
 
+        <p className="mt-6 text-fs-16 text-charcoal">{product.description}</p>
+
         <div className="mt-10 border-t border-hairline">
-          <Disclosure title="View Product Details"><p>{product.description}</p></Disclosure>
           <Disclosure title="Shipping &amp; Returns"><p>Delivery and returns details will be confirmed at checkout.</p></Disclosure>
           <Disclosure title="Reviews (0)"><p>No reviews yet.</p></Disclosure>
         </div>

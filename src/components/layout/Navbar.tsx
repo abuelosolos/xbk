@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { Logo } from "@/components/brand/Logo";
 import { MobileMenu } from "@/components/layout/MobileMenu";
+import { MobileSearch } from "@/components/layout/MobileSearch";
 import { SearchOverlay } from "@/components/layout/SearchOverlay";
 import { authClient } from "@/lib/auth-client";
 import { EASE } from "@/lib/motion";
@@ -40,6 +41,7 @@ export function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [phone, setPhone] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const count = useCart(cartCount);
   const openCart = useUI((s) => s.openCart);
@@ -47,6 +49,14 @@ export function Navbar() {
   const pathname = usePathname();
 
   useEffect(() => setMounted(true), []);
+  // phones get the in-navbar search; wider screens keep the dropdown panel
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const update = () => setPhone(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
   // close the mobile menu on navigation and on Escape
   useEffect(() => { setMobileOpen(false); setSearchOpen(false); }, [pathname]);
   useEffect(() => {
@@ -129,7 +139,7 @@ export function Navbar() {
         animate={{ y: slideUp ? "-100%" : 0 }}
         transition={{ duration: 0.3, ease: EASE }}
       >
-        <div className="mx-auto flex h-14 max-w-[1440px] items-center justify-between px-4 lg:px-12">
+        <div className="mx-auto flex h-14 max-w-[1440px] items-center justify-between px-[26px] lg:px-12">
           <Link href="/" aria-label="XBK home" className="w-[29px] shrink-0">
             <Logo className="w-full" />
           </Link>
@@ -267,9 +277,10 @@ export function Navbar() {
           )}
         </AnimatePresence>
         <AnimatePresence>{mobileOpen && <MobileMenu onClose={() => setMobileOpen(false)} />}</AnimatePresence>
+        <AnimatePresence>{searchOpen && phone && <MobileSearch onClose={() => setSearchOpen(false)} />}</AnimatePresence>
       </motion.header>
 
-      <AnimatePresence>{searchOpen && <SearchOverlay onClose={() => setSearchOpen(false)} />}</AnimatePresence>
+      <AnimatePresence>{searchOpen && !phone && <SearchOverlay onClose={() => setSearchOpen(false)} />}</AnimatePresence>
     </>
   );
 }
