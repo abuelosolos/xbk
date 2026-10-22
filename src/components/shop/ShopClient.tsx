@@ -54,6 +54,12 @@ export function ShopClient({
   const openSheet = (g: FilterGroup | null) => { setOnlyGroup(g); setMobileOpen(true); };
   const [sortOpen, setSortOpen] = useState(false);
 
+  // a category/type pick with no other filters that matches nothing means that shelf is out of stock
+  const categoryOnly =
+    !filters.q &&
+    (filters.categories.length > 0 || filters.types.length > 0) &&
+    filters.genders.length === 0 && filters.sizes.length === 0 && filters.colors.length === 0 && !filters.saleOnly && filters.price === "all";
+
   const facets = useMemo<Facets>(() => {
     const colors = new Map<string, string>();
     products.forEach((p) => p.colors.forEach((c) => colors.set(c.name, c.hex)));
@@ -217,15 +223,17 @@ export function ShopClient({
         <div className="min-w-0 flex-1">
           {results.length === 0 ? (
             <div className="flex flex-col items-center gap-4 py-24 text-center">
-              <p className="text-fs-24 font-medium">{filters.q ? `No products match “${filters.q}”` : "No products match"}</p>
-              <p className="text-fs-16 text-mute">{filters.q ? "Try a different word or remove a filter." : "Try removing a filter or two."}</p>
+              <p className="text-fs-24 font-medium">{filters.q ? `No products match “${filters.q}”` : categoryOnly ? "Out of stock" : "No products match"}</p>
+              <p className="text-fs-16 text-mute">
+                {filters.q ? "Try a different word or remove a filter." : categoryOnly ? "Nothing here is in stock right now. Check back soon." : "Try removing a filter or two."}
+              </p>
               <Button variant="secondary" onClick={clear}>Clear filters</Button>
             </div>
           ) : (
             <motion.div layout className={`-mx-4 grid grid-cols-2 gap-px lg:mx-0 ${showFilters ? "lg:grid-cols-3" : "lg:grid-cols-4"}`}>
               <AnimatePresence>
                 {results.map((p, i) => (
-                  <ProductCard key={p.id} product={p} index={i} showPrice />
+                  <ProductCard key={p.id} product={p} index={i} showPrice reflow />
                 ))}
               </AnimatePresence>
             </motion.div>

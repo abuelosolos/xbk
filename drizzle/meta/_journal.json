@@ -71,6 +71,13 @@
       "when": 1792586477183,
       "tag": "0009_wise_surge",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792680513534,
+      "tag": "0010_new_catalogue_subcategories",
+      "breakpoints": true
     }
   ]
 }

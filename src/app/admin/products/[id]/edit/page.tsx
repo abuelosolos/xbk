@@ -1,6 +1,7 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { hasDb } from "@/db";
+import { PageHeader } from "@/components/admin/ui/layout";
+import { ButtonLink } from "@/components/ui/Button";
 import { ProductForm } from "@/components/admin/ProductForm";
 import { getCategories, getProductById } from "@/lib/products";
 import { requireAdmin } from "@/lib/session";
@@ -15,8 +16,11 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
   if (!product) notFound();
   return (
     <>
-      <Link href="/admin/products" className="text-fs-14 text-mute underline underline-offset-4">All products</Link>
-      <h1 className="mb-6 mt-2 text-fs-32 font-medium leading-tight">Edit {product.name}</h1>
+      <PageHeader
+        title={`Edit ${product.name}`}
+        back={{ href: "/admin/products", label: "All products" }}
+        actions={<ButtonLink href={`/product/${product.slug}`} variant="outline" size="sm">View in shop</ButtonLink>}
+      />
       <ProductForm key={product.id} categories={categories} product={product} />
     </>
   );

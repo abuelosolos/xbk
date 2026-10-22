@@ -40,4 +40,4 @@ export async function getTemplate(key: TemplateKey): Promise<Template> {
 }
 
 /** Replaces `{{var}}` placeholders; unknown placeholders are left as typed. Values are plain text (escaped when rendered to HTML). */
-export const fill = (text: string, vars: Record<string, string>) => text.replace(/\{\{(\w+)\}\}/g, (m, k) => vars[k] ?? m);
+export { fill, SAMPLE_VARS } from "./email-fill";

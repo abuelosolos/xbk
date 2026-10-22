@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Bebas_Neue, Inter, Poppins } from "next/font/google";
 import { BackToTop } from "@/components/layout/BackToTop";
 import { CartDrawer } from "@/components/cart/CartDrawer";
@@ -14,6 +14,9 @@ export const metadata: Metadata = {
   title: { default: "XBK", template: "%s | XBK" },
   description: "XBK — footwear, clothing and accessories built to move.",
 };
+
+// viewport-fit=cover lets the admin bottom bar and save bars use env(safe-area-inset-bottom) on iPhones
+export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

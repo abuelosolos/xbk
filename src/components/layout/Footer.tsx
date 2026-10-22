@@ -3,7 +3,7 @@ import { NewsletterForm } from "@/components/layout/NewsletterForm";
 import { Disclosure } from "@/components/ui/Disclosure";
 
 const COLUMNS = [
-  { title: "Shop", links: [["New & Featured", "/shop"], ["Men", "/men"], ["Women", "/women"], ["Kids", "/kids"], ["Shoes", "/footwear"], ["Clothing", "/clothing"], ["Accessories", "/accessories"], ["Sale", "/sale"]] },
+  { title: "Shop", links: [["New & Featured", "/shop"], ["Men", "/men"], ["Women", "/women"], ["Shoes", "/footwear"], ["Clothing", "/clothing"], ["Accessories", "/accessories"], ["Sale", "/sale"]] },
   { title: "Help", links: [["Order Status", "/account"], ["Shipping & Delivery", "/shop"], ["Returns", "/shop"], ["Contact Us", "/shop"]] },
   { title: "Company", links: [["About XBK", "/"], ["Careers", "/"], ["Sustainability", "/"]] },
   { title: "Account", links: [["Sign In", "/sign-in"], ["Join Us", "/sign-up"], ["Your Bag", "/cart"]] },

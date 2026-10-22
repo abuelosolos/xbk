@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { StatusPill } from "@/components/account/StatusPill";
+import { Card, Notice, PageHeader } from "@/components/admin/ui/layout";
 import { CancelOrderForm } from "@/components/admin/CancelOrderForm";
 import { OrderStatusForm } from "@/components/admin/OrderStatusForm";
 import { getDb, hasDb } from "@/db";
@@ -29,80 +29,94 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
   const step = order.status === "paid" ? "shipped" : order.status === "shipped" ? "delivered" : null;
   const tpl = step ? await getTemplate(step === "shipped" ? "order_shipped" : "order_delivered") : null;
 
+  const steps = [
+    { label: "Paid", at: order.paidAt },
+    { label: "Shipped", at: order.shippedAt },
+    { label: "Delivered", at: order.deliveredAt },
+  ];
+  const when = (d: Date | null) => (d ? d.toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" }) : "Not yet");
+  const subtotal = order.totalKobo - order.shippingFeeKobo;
+
   return (
     <>
-      <Link href="/admin/orders" className="text-fs-14 text-mute underline underline-offset-4">All orders</Link>
-      <div className="mb-6 mt-2 flex items-center gap-3">
-        <h1 className="text-fs-32 font-medium leading-tight">Order {vars.reference}</h1>
-        <StatusPill status={order.status} />
-      </div>
+      <PageHeader title={`Order ${vars.reference}`} back={{ href: "/admin/orders", label: "All orders" }} status={<StatusPill status={order.status} />} />
 
       {order.stockShortfall && (
-        <p role="alert" className="mb-6 bg-cloud p-4 text-fs-14 font-medium text-ink">
-          Oversold: stock did not cover this order when it was paid. Check stock and contact the customer or refund.
-        </p>
+        <Notice role="alert">Oversold: stock did not cover this order when it was paid. Check stock and contact the customer or refund.</Notice>
       )}
 
-      <div className="grid gap-8 lg:grid-cols-2">
-        <section>
-          <h2 className="mb-3 text-fs-20 font-medium">Items</h2>
-          <ul className="divide-y divide-hairline-soft text-fs-14">
-            {items.map((i) => (
-              <li key={i.id} className="flex justify-between gap-4 py-3">
-                <span>{i.qty} × {i.name} <span className="text-mute">({i.size}{i.color && `, ${i.color}`})</span></span>
-                <span>{formatNaira(i.unitPriceKobo * i.qty)}</span>
-              </li>
-            ))}
-            <li className="flex justify-between py-3"><span>Delivery</span><span>{formatNaira(order.shippingFeeKobo)}</span></li>
-            <li className="flex justify-between py-3 font-medium"><span>Total</span><span>{formatNaira(order.totalKobo)}</span></li>
-          </ul>
-        </section>
-        <section>
-          <h2 className="mb-3 text-fs-20 font-medium">Deliver to</h2>
-          <p className="text-fs-14 leading-relaxed">
-            {s.fullName}<br />{s.address}<br />{s.city}, {s.state}{s.postalCode && ` ${s.postalCode}`}<br />{s.phone}<br />
-            <span className="text-mute">{order.email}</span>
-          </p>
-          <p className="mt-3 text-fs-14 text-mute">
-            Placed {order.createdAt.toLocaleString("en-NG")}
-            {order.shippedAt && ` · shipped ${order.shippedAt.toLocaleDateString("en-NG")}`}
-            {order.deliveredAt && ` · delivered ${order.deliveredAt.toLocaleDateString("en-NG")}`}
-          </p>
-        </section>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <div className="space-y-6">
+          {step && tpl && (
+            <Card title={step === "shipped" ? "Mark as shipped" : "Mark as delivered"} hint="Moves the order forward one step. This can't be undone.">
+              <OrderStatusForm
+                key={order.status}
+                orderId={order.id}
+                step={step}
+                defaultSubject={fill(tpl.subject, vars)}
+                defaultMessage={fill(tpl.body, vars)}
+              />
+            </Card>
+          )}
+
+          <Card title="Items">
+            <ul className="divide-y divide-hairline-soft text-fs-14">
+              {items.map((i) => (
+                <li key={i.id} className="flex justify-between gap-4 py-3">
+                  <span>{i.qty} × {i.name} <span className="text-mute">({i.size}{i.color && `, ${i.color}`})</span></span>
+                  <span className="tabular-nums">{formatNaira(i.unitPriceKobo * i.qty)}</span>
+                </li>
+              ))}
+              <li className="flex justify-between py-3 text-mute"><span>Subtotal</span><span className="tabular-nums">{formatNaira(subtotal)}</span></li>
+              <li className="flex justify-between py-3 text-mute"><span>Delivery</span><span className="tabular-nums">{formatNaira(order.shippingFeeKobo)}</span></li>
+              <li className="flex justify-between py-3 font-medium"><span>Total</span><span className="tabular-nums">{formatNaira(order.totalKobo)}</span></li>
+            </ul>
+          </Card>
+
+          {(order.status === "paid" || order.status === "shipped") && (
+            <Card title="Cancel or refund" hint="Returns the items to stock. Issue the refund in the Paystack dashboard.">
+              <CancelOrderForm
+                orderId={order.id}
+                defaultMessage={`Hi ${vars.name},\n\nYour XBK order ${vars.reference} has been cancelled and your payment will be refunded to your original payment method.\n\nXBK`}
+              />
+            </Card>
+          )}
+          {order.status === "cancelled" && (
+            <Card title="Cancelled">
+              <p className="text-fs-14 text-mute">
+                Cancelled {order.cancelledAt?.toLocaleDateString("en-NG")}. Items were returned to stock.
+                {order.cancelNote && <> Note: <span className="text-ink">{order.cancelNote}</span></>}
+              </p>
+            </Card>
+          )}
+        </div>
+
+        <div className="space-y-6">
+          <Card title="Progress">
+            <ol className="space-y-3 text-fs-14">
+              {steps.map((s) => (
+                <li key={s.label} className="flex items-center gap-3">
+                  <span aria-hidden className={`size-3 shrink-0 rounded-full ${s.at ? "bg-ink" : "border border-hairline"}`} />
+                  <span className={s.at ? "font-medium" : "text-mute"}>{s.label}</span>
+                  <span className="ml-auto text-right text-mute">{when(s.at)}</span>
+                </li>
+              ))}
+            </ol>
+          </Card>
+          <Card title="Deliver to">
+            <p className="text-fs-14 leading-relaxed">
+              {s.fullName}<br />{s.address}<br />{s.city}, {s.state}{s.postalCode && ` ${s.postalCode}`}<br />{s.phone}<br />
+              <span className="text-mute">{order.email}</span>
+            </p>
+          </Card>
+          <Card title="Payment">
+            <dl className="space-y-2 text-fs-14">
+              <div className="flex justify-between gap-3"><dt className="text-mute">Placed</dt><dd>{order.createdAt.toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" })}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-mute">Paystack ref</dt><dd className="break-all text-right">{order.reference}</dd></div>
+            </dl>
+          </Card>
+        </div>
       </div>
-
-      {step && tpl ? (
-        <section className="mt-10">
-          <h2 className="mb-3 text-fs-20 font-medium">{step === "shipped" ? "Mark as shipped" : "Mark as delivered"}</h2>
-          <OrderStatusForm
-            key={order.status}
-            orderId={order.id}
-            step={step}
-            defaultSubject={fill(tpl.subject, vars)}
-            defaultMessage={fill(tpl.body, vars)}
-          />
-        </section>
-      ) : (
-        <p className="mt-10 text-fs-14 text-mute">
-          {order.status === "delivered" ? "This order has been delivered." : `A ${order.status} order can't be advanced.`}
-        </p>
-      )}
-
-      {order.status === "cancelled" && (
-        <p className="mt-6 text-fs-14 text-mute">
-          Cancelled {order.cancelledAt?.toLocaleDateString("en-NG")}. Items were returned to stock.
-          {order.cancelNote && <> Note: <span className="text-ink">{order.cancelNote}</span></>}
-        </p>
-      )}
-      {(order.status === "paid" || order.status === "shipped") && (
-        <section className="mt-10">
-          <h2 className="mb-3 text-fs-20 font-medium">Cancel or refund</h2>
-          <CancelOrderForm
-            orderId={order.id}
-            defaultMessage={`Hi ${vars.name},\n\nYour XBK order ${vars.reference} has been cancelled and your payment will be refunded to your original payment method.\n\nXBK`}
-          />
-        </section>
-      )}
     </>
   );
 }

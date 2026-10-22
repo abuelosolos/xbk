@@ -22,6 +22,7 @@
   /* Responsive type scale: values come from --fs-* below, so one class resizes per breakpoint */
   --text-fs-32: var(--fs-32);
   --text-fs-24: var(--fs-24);
+  --text-fs-20: var(--fs-20);
   --text-fs-16: var(--fs-16);
   --text-fs-14: var(--fs-14);
   --text-fs-13: var(--fs-13);
@@ -35,6 +36,7 @@
 :root {
   --fs-32: 26px;
   --fs-24: 20px;
+  --fs-20: 18px;
   --fs-16: 15px;
   --fs-14: 13px;
   --fs-13: 12px;
@@ -44,12 +46,14 @@
   :root {
     --fs-32: 28px;
     --fs-24: 22px;
+    --fs-20: 19px;
   }
 }
 @media (min-width: 1024px) {
   :root {
     --fs-32: 32px;
     --fs-24: 24px;
+    --fs-20: 20px;
     --fs-16: 16px;
     --fs-14: 14px;
     --fs-13: 13px;
@@ -157,5 +161,21 @@
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* Admin bottom sheet: slides up on phones (native <dialog>), plain modal from md up */
+@keyframes sheet-up {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+}
+dialog.sheet[open] {
+  animation: sheet-up 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  dialog.sheet[open] {
+    animation: none;
   }
 }

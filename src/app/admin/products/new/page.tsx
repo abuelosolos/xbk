@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Notice, PageHeader } from "@/components/admin/ui/layout";
 import { hasDb } from "@/db";
 import { ProductForm } from "@/components/admin/ProductForm";
 import { getCategories } from "@/lib/products";
@@ -11,9 +11,8 @@ export default async function NewProductPage() {
   const categories = await getCategories();
   return (
     <>
-      <Link href="/admin/products" className="text-fs-14 text-mute underline underline-offset-4">All products</Link>
-      <h1 className="mb-6 mt-2 text-fs-32 font-medium leading-tight">New product</h1>
-      {hasDb() ? <ProductForm categories={categories} /> : <p className="bg-cloud p-4 text-fs-14 text-charcoal">Set DATABASE_URL to create products.</p>}
+      <PageHeader title="New product" back={{ href: "/admin/products", label: "All products" }} />
+      {hasDb() ? <ProductForm categories={categories} /> : <Notice>Set DATABASE_URL to create products.</Notice>}
     </>
   );
 }

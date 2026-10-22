@@ -17,7 +17,7 @@ const productFields = z.object({
   subtitle: z.string().trim().min(2, "Enter a subtitle.").max(160, "Keep the subtitle under 160 characters."),
   category: z.string().trim().min(1), // category slug, picked from the form's dropdown
   subcategory: z.string().trim().optional(), // sub-category slug within that category
-  gender: z.enum(["men", "women", "kids", "unisex"]),
+  gender: z.enum(["men", "women", "unisex"]),
   priceNaira: naira,
   saleNaira: naira.optional(),
   sizes: z.string().transform(csv).refine((a) => a.length > 0, "Add at least one size, separated by commas."),

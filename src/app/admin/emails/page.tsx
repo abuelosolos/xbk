@@ -1,25 +1,29 @@
-import { hasDb } from "@/db";
+import { FilterTabs, Notice, PageHeader } from "@/components/admin/ui/layout";
 import { TemplateForm } from "@/components/admin/TemplateForm";
-import { getTemplate, TEMPLATE_KEYS, TEMPLATE_LABELS } from "@/lib/email-templates";
+import { hasDb } from "@/db";
+import { DEFAULT_TEMPLATES, getTemplate, TEMPLATE_KEYS, TEMPLATE_LABELS } from "@/lib/email-templates";
 import { requireAdmin } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminEmailsPage() {
+export default async function AdminEmailsPage({ searchParams }: { searchParams: Promise<{ t?: string }> }) {
   await requireAdmin("/admin/emails");
-  const templates = await Promise.all(TEMPLATE_KEYS.map(async (k) => [k, await getTemplate(k)] as const));
+  const { t } = await searchParams;
+  const key = TEMPLATE_KEYS.find((k) => k === t) ?? TEMPLATE_KEYS[0];
+  const template = await getTemplate(key);
+  const customised = template.subject !== DEFAULT_TEMPLATES[key].subject || template.body !== DEFAULT_TEMPLATES[key].body;
+
   return (
     <>
-      <h1 className="mb-2 text-fs-32 font-medium leading-tight">Emails</h1>
-      <p className="mb-8 max-w-xl text-fs-16 text-mute">
-        The default message for each customer email. When you mark an order shipped or delivered you can still edit the text for that one order.
-      </p>
-      {!hasDb() && <p className="mb-6 bg-cloud p-4 text-fs-14 text-charcoal">Set DATABASE_URL to save templates.</p>}
-      <div className="space-y-12">
-        {templates.map(([k, t]) => (
-          <TemplateForm key={k + t.subject + t.body} templateKey={k} {...TEMPLATE_LABELS[k]} template={t} />
-        ))}
+      <PageHeader
+        title="Emails"
+        description="The default message for each customer email. When you mark an order shipped or delivered you can still edit the text for that one order."
+      />
+      {!hasDb() && <Notice>Set DATABASE_URL to save templates.</Notice>}
+      <div className="mb-6">
+        <FilterTabs tabs={TEMPLATE_KEYS.map((k) => ({ label: TEMPLATE_LABELS[k].title, href: `/admin/emails?t=${k}`, active: k === key }))} />
       </div>
+      <TemplateForm key={key + template.subject + template.body} templateKey={key} {...TEMPLATE_LABELS[key]} template={template} customised={customised} />
     </>
   );
 }

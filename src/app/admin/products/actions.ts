@@ -7,6 +7,7 @@ import { z } from "zod";
 import { getDb } from "@/db";
 import { categories, orderItems, products, stockMovements, subcategories } from "@/db/schema";
 import { requireAdmin } from "@/lib/session";
+import { withColorPhotos } from "@/lib/colors";
 import { MAX_PHOTOS, deleteBlobs, parsePhotoUrls } from "@/lib/uploads";
 import { scaleKobo } from "@/lib/pricing";
 import { adjustStockBy } from "@/lib/products";
@@ -41,7 +42,19 @@ async function resolveCategory(input: Input): Promise<{ categoryId: string; subc
   return { categoryId: category.id, subcategoryId: sub.id };
 }
 
-const toRow = (input: Input, ids: { categoryId: string; subcategoryId: string | null }) => ({
+/** Photo URL -> colour name, from the form's parallel `photo` / `photoColor` lists ("" = not tied to a colour). */
+function photoColorTags(formData: FormData) {
+  const urls = formData.getAll("photo");
+  const names = formData.getAll("photoColor");
+  const tags = new Map<string, string>();
+  urls.forEach((url, i) => {
+    const name = names[i];
+    if (typeof url === "string" && typeof name === "string" && name) tags.set(url, name);
+  });
+  return tags;
+}
+
+const toRow = (input: Input, ids: { categoryId: string; subcategoryId: string | null }, images: string[], tags: Map<string, string>) => ({
   name: input.name,
   slug: input.slug,
   subtitle: input.subtitle,
@@ -51,10 +64,14 @@ const toRow = (input: Input, ids: { categoryId: string; subcategoryId: string | 
   priceKobo: input.priceNaira,
   salePriceKobo: input.saleNaira ?? null,
   sizes: input.sizes,
-  colors: input.colors.map((c) => {
-    const [name, hex] = c.split(":").map((s) => s.trim());
-    return { name, hex: hex || "#111111" };
-  }),
+  colors: withColorPhotos(
+    input.colors.map((c) => {
+      const [name, hex] = c.split(":").map((s) => s.trim());
+      return { name, hex: hex || "#111111" };
+    }),
+    images,
+    tags,
+  ),
   badge: input.badge || null,
   description: input.description,
 });
@@ -63,7 +80,8 @@ function parseForm<S extends typeof productSchema | typeof productUpdateSchema>(
   const raw = Object.fromEntries(formData);
   const values = Object.fromEntries(Object.entries(raw).filter(([, v]) => typeof v === "string")) as Record<string, string>;
   if (raw.saleNaira === "") delete raw.saleNaira;
-  delete raw.photo; // photo URLs are read separately
+  delete raw.photo; // photo URLs (and their colours) are read separately
+  delete raw.photoColor;
   return { values, parsed: schema.safeParse(raw) as ReturnType<S["safeParse"]> };
 }
 
@@ -87,7 +105,7 @@ export async function createProduct(_prev: ProductFormState, formData: FormData)
   // product + its opening-stock movement succeed or fail together (batch = one implicit transaction)
   const id = randomUUID();
   await db.batch([
-    db.insert(products).values({ id, ...toRow(input, ids), stock: input.stock, images }),
+    db.insert(products).values({ id, ...toRow(input, ids, images, photoColorTags(formData)), stock: input.stock, images }),
     db.insert(stockMovements).values({ productId: id, delta: input.stock, stockAfter: input.stock, reason: "initial", actorUserId: user.id }),
   ]);
   revalidateCatalogue(input.slug);
@@ -117,7 +135,7 @@ export async function updateProduct(id: string, _prev: ProductFormState, formDat
 
   await db
     .update(products)
-    .set({ ...toRow(input, ids), images, updatedAt: new Date() })
+    .set({ ...toRow(input, ids, images, photoColorTags(formData)), images, updatedAt: new Date() })
     .where(eq(products.id, id));
   await deleteBlobs(current.images.filter((u) => !images.includes(u))); // photos removed in this edit
   revalidateCatalogue([input.slug, current.slug]);

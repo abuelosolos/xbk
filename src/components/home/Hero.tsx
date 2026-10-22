@@ -7,9 +7,12 @@ import { ButtonLink } from "@/components/ui/Button";
 import { unsplash } from "@/lib/images";
 import { EASE } from "@/lib/motion";
 
-const LINES = ["Built", "to move."];
-// colour motion-blur race photos; the carousel advances every 3 seconds
-const SLIDES = ["iZgfvYwo69Q", "OpDIYfAb4WQ", "QjG2dna1Ll8", "WAAkGFbZUus"];
+const LINES = ["We Are", "Black Excellence"];
+// campaign photos; the carousel advances every 3 seconds. `focus` keeps the subject in frame when the wide photo is cropped on phones.
+const SLIDES = [
+  { src: "/xbk-hero-orange-sweatshirt.jpeg", focus: "80% center" },
+  { src: "/xbk-hero-denim-duo.png", focus: "52% center" },
+];
 const INTERVAL = 3000;
 
 /**
@@ -51,13 +54,14 @@ export function Hero() {
           }}
         >
           <Image
-            src={unsplash(SLIDES[index], 2000)}
+            src={unsplash(SLIDES[index].src, 2000)}
             alt=""
             fill
             priority={index === 0}
             sizes="100vw"
             draggable={false}
             className="object-cover"
+            style={{ objectPosition: SLIDES[index].focus }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/30 to-ink/10" />
         </motion.div>
@@ -96,17 +100,32 @@ export function Hero() {
         </motion.div>
       </div>
 
-      <div className="absolute bottom-4 right-4 flex gap-2 lg:bottom-16 lg:right-12" role="tablist" aria-label="Hero slides">
-        {SLIDES.map((id, i) => (
+      {/* progress: slides already shown are full, the current one fills over the interval */}
+      <div className="absolute bottom-2 right-2 flex lg:bottom-14 lg:right-10" role="tablist" aria-label="Hero slides">
+        {SLIDES.map((slide, i) => (
           <button
-            key={id}
+            key={slide.src}
             type="button"
             role="tab"
             aria-selected={i === index}
-            aria-label={`Slide ${i + 1}`}
+            aria-label={`Slide ${i + 1} of ${SLIDES.length}`}
             onClick={() => setSlide([i, i >= index ? 1 : -1])}
-            className={`h-1.5 rounded-full bg-white transition-all duration-300 ${i === index ? "w-6" : "w-1.5 opacity-50"}`}
-          />
+            className="flex h-11 w-9 items-center justify-center"
+          >
+            <span className="relative block h-[3px] w-full overflow-hidden rounded-full bg-white/40">
+              {i === index ? (
+                <motion.span
+                  key={index}
+                  className="absolute inset-0 origin-left bg-white"
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ duration: INTERVAL / 1000, ease: "linear" }}
+                />
+              ) : (
+                <span className={`absolute inset-0 bg-white ${i < index ? "" : "hidden"}`} />
+              )}
+            </span>
+          </button>
         ))}
       </div>
     </section>

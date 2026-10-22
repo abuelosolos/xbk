@@ -8,6 +8,7 @@ import type { HubSection } from "@/lib/collections";
 import { EASE } from "@/lib/motion";
 
 const styles = (n: number) => `${n} ${n === 1 ? "style" : "styles"}`;
+const stockLabel = (t: { count: number; outOfStock: boolean }) => (t.outOfStock ? "Out of stock" : styles(t.count));
 
 /**
  * "feature": large 4:5 lifestyle photos, swipeable rail on mobile, 2–3 up on desktop.
@@ -41,14 +42,14 @@ export function HubTiles({ section }: { section: HubSection }) {
                     alt=""
                     fill
                     sizes="(min-width:768px) 33vw, 80vw"
-                    className="object-cover mix-blend-multiply transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+                    className={`object-cover mix-blend-multiply transition-transform duration-700 ease-out group-hover:scale-[1.04] ${t.outOfStock ? "opacity-40 grayscale" : ""}`}
                   />
                 )}
               </div>
               <div className="mt-4 flex items-end justify-between gap-4">
                 <div className="min-w-0">
                   <h3 className="text-fs-24 font-medium leading-tight">{t.label}</h3>
-                  <p className="mt-1 text-fs-16 text-mute">{styles(t.count)}</p>
+                  <p className="mt-1 text-fs-16 text-mute">{stockLabel(t)}</p>
                 </div>
                 <span className="inline-flex h-10 shrink-0 items-center raised-dark rounded-pill bg-ink px-6 text-fs-16 font-medium text-white transition group-hover:bg-charcoal group-active:scale-95">
                   Shop
@@ -72,9 +73,9 @@ export function HubTiles({ section }: { section: HubSection }) {
           transition={{ duration: 0.55, delay: (i % 4) * 0.07, ease: EASE }}
         >
           <Link href={t.href} className="group block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink">
-            <FramedImage src={t.image} label={t.label} className="aspect-square" sizes="(min-width:1024px) 25vw, 50vw" />
+            <FramedImage src={t.image} label={t.label} className={`aspect-square ${t.outOfStock ? "opacity-40 grayscale" : ""}`} sizes="(min-width:1024px) 25vw, 50vw" />
             <h3 className="mt-3 truncate text-fs-16 font-medium leading-snug group-hover:underline group-hover:underline-offset-4">{t.label}</h3>
-            <p className="text-fs-14 font-medium text-mute">{styles(t.count)}</p>
+            <p className="text-fs-14 font-medium text-mute">{stockLabel(t)}</p>
           </Link>
         </motion.li>
       ))}

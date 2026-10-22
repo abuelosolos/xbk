@@ -1,12 +1,14 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { EASE } from "@/lib/motion";
 import { ArrowUp } from "@phosphor-icons/react";
 
 /** Mobile only: once well down the page, scrolling up a little raises a round button that jumps back to the top. */
 export function BackToTop() {
+  const pathname = usePathname();
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -21,6 +23,8 @@ export function BackToTop() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  if (pathname.startsWith("/admin")) return null; // the admin has its own bottom bar
 
   return (
     <AnimatePresence>

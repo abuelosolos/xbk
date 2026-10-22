@@ -7,7 +7,7 @@ import type { Gender } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Shop All" };
 
-const GENDERS: Gender[] = ["men", "women", "kids", "unisex"];
+const GENDERS: Gender[] = ["men", "women", "unisex"];
 const SORTS: SortKey[] = ["featured", "price-asc", "price-desc"];
 
 type SP = Record<string, string | string[] | undefined>;

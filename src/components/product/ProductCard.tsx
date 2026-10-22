@@ -4,23 +4,22 @@ import Link from "next/link";
 import { motion } from "motion/react";
 import { FramedImage } from "@/components/product/FramedImage";
 import { EASE } from "@/lib/motion";
-import { MOCK_PRODUCTS } from "@/db/mock-products";
 import type { Product } from "@/lib/types";
 import { formatNaira } from "@/lib/utils";
 
-// TEMP: every card shows the Vector Trainer (image, copy, price) while real photos are pending; links keep the real slug.
-const PLACEHOLDER = MOCK_PRODUCTS.find((p) => p.slug === "vector-trainer")!;
-
 export function ProductCard({
-  product: real,
+  product,
   index = 0,
   showPrice = false,
+  reflow = false,
 }: {
   product: Product;
   index?: number;
   showPrice?: boolean;
+  /** Animate position changes; only the filterable shop grid needs it (it makes scroll reveals janky elsewhere). */
+  reflow?: boolean;
 }) {
-  const product = { ...PLACEHOLDER, id: real.id, slug: real.slug };
+  const soldOut = product.stock <= 0;
   const onSale = product.salePriceKobo !== null;
   const percentOff = onSale
     ? Math.round(((product.priceKobo - product.salePriceKobo!) / product.priceKobo) * 100)
@@ -28,12 +27,12 @@ export function ProductCard({
 
   return (
     <motion.article
-      layout
-      initial={{ opacity: 0, y: 28 }}
+      layout={reflow}
+      initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.96 }}
-      viewport={{ once: true, margin: "-40px" }}
-      transition={{ duration: 0.55, delay: (index % 4) * 0.07, ease: EASE }}
+      viewport={{ once: true, margin: "0px 0px -40px 0px" }}
+      transition={{ duration: 0.45, delay: (index % 4) * 0.05, ease: EASE }}
       className="group"
     >
       <Link href={`/product/${product.slug}`} className="block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink">
@@ -41,9 +40,9 @@ export function ProductCard({
         <div className="relative overflow-hidden">
           <FramedImage src={product.images[0]} label={product.name} className="aspect-[4/5]" />
 
-          {product.badge && (
+          {(soldOut || product.badge) && (
             <span className="absolute left-4 top-4 z-20 rounded-pill border border-hairline bg-white px-3 py-1 text-fs-12 font-medium">
-              {product.badge}
+              {soldOut ? "Sold out" : product.badge}
             </span>
           )}
 
